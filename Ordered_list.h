@@ -95,6 +95,8 @@ Remove this comment too. */
 #include <utility>
 #include <cassert>
 
+#include <iostream>
+using namespace std;
 // These Function Object Class templates make it simple to use a class's less-than operator
 // for the ordering function in declaring an Ordered_list container.
 // These declare operator() as a const member function because the function does
@@ -362,18 +364,19 @@ bool apply_if_arg(IT first, IT last, F function, A arg)
 
 
 template<typename T, typename OF>
-Ordered_list<T, OF>::Ordered_list() : num_node(0), first(nullptr), last(nullptr) {}
+Ordered_list<T, OF>::Ordered_list() : first(nullptr), last(nullptr) , num_node(0){++g_Ordered_list_count;}
 
 
 
 template<typename T, typename OF>
-Ordered_list<T, OF>::Ordered_list(const Ordered_list& original) : num_node(0), first(nullptr), last(nullptr), ordering_f(original.ordering_f)
+Ordered_list<T, OF>::Ordered_list(const Ordered_list& original) : ordering_f(original.ordering_f), first(nullptr), last(nullptr), num_node(0)
 {
     Ordered_list<T, OF> local_list;
     local_list.ordering_f = original.ordering_f;
-    for(Iterator it = begin(); it != end(); ++it)
+    for(Iterator it = original.begin(); it != original.end(); ++it)
         local_list.push_back(*it);
     swap(local_list);
+    ++g_Ordered_list_count;
 }
 
 template<typename T, typename OF>
@@ -389,6 +392,7 @@ void Ordered_list<T, OF>::push_back(const T& new_datum)
         first = new_node;
         last = new_node;
     }
+    ++num_node;
 }
 
 
@@ -399,7 +403,31 @@ void Ordered_list<T, OF>::push_back(const T& new_datum)
 // Since no type T data is copied, no exceptions are possible,
 // so the no-throw guarantee is made.
 template<typename T, typename OF>
-Ordered_list<T, OF>::Ordered_list(Ordered_list&& original) noexcept : num_node(0), first(nullptr), last(nullptr) {swap(original);}
+Ordered_list<T, OF>::Ordered_list(Ordered_list&& original) noexcept : first(nullptr), last(nullptr), num_node(0) {swap(original);++g_Ordered_list_count;}
+
+
+// Copy assign this list with a copy of another list, using the copy-swap idiom.
+// Basic and strong exception guarantee:
+// If an exception is thrown during the copy, no memory is leaked, and lhs is unchanged.
+template<typename T, typename OF>
+Ordered_list<T, OF>& Ordered_list<T, OF>::operator= (const Ordered_list& rhs)
+{
+    Ordered_list<T, OF> temp(rhs);
+    swap(temp);
+    return *this;
+}
+
+
+// Move assignment operator simply swaps the current content with the rhs.
+// Since no type T data is copied, no exceptions are possible,
+// so the no-throw guarantee is made.
+template<typename T, typename OF>
+Ordered_list<T, OF>& Ordered_list<T, OF>::operator= (Ordered_list&& rhs) noexcept
+{
+    swap(rhs);
+    return *this;
+}
+
 
 
 
@@ -411,25 +439,32 @@ void Ordered_list<T, OF>::insert(const T& new_datum)
 {
     Node *find_insert_position = first;
     if (!num_node) {
+        //cout << "1!!" <<endl;
         Node *new_node = new Node(new_datum, nullptr, nullptr);
         first = new_node;
         last = new_node;
     }
     else if(!ordering_f(first->datum, new_datum)) {
+        //cout << "2!!" <<endl;
         Node *new_node = new Node(new_datum, nullptr, first);
+        first->prev = new_node;
         first = new_node;
     }
     else if(ordering_f(last->datum, new_datum)) {
+        //cout << "3!!" <<endl;
         Node *new_node = new Node(new_datum, last, nullptr);
+        last->next = new_node;
         last = new_node;
     }
     else {
+        //cout << "4!!" <<endl;
         while (ordering_f(find_insert_position->datum, new_datum))
             find_insert_position = find_insert_position->next;
         Node *new_node = new Node(new_datum, find_insert_position->prev, find_insert_position);
         find_insert_position->prev->next = new_node;
         find_insert_position->prev = new_node;
     }
+    ++num_node;
 }
 
 template<typename T, typename OF>
@@ -437,6 +472,7 @@ Ordered_list<T, OF>::~Ordered_list()
 {
     for(Iterator it = begin(); it != end(); ++it)
         delete it.node_ptr;
+    --g_Ordered_list_count;
 }
 
 
@@ -486,6 +522,7 @@ void Ordered_list<T, OF>::erase(Iterator it) noexcept
         node->prev->next = node->next;
         node->next->prev = node->prev;
     }
+    --num_node;
 }
 
 

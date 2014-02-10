@@ -10,7 +10,7 @@ int String::number = 0;
 int String::total_allocation = 0;
 bool String::messages_wanted = false;
 
-String::String(const char* cstr_) : str_length((int) strlen(cstr_)) // check whether cast work
+String::String(const char* cstr_) : str_length(strlen(cstr_)) // check whether cast work
 {
     if (messages_wanted)
         cout << "Ctor: \"" << cstr_ << "\"" << endl;
@@ -44,7 +44,7 @@ String::String(const String& original) : str_length(original.size())
     total_allocation += str_allocation;
 }
 
-String::String(String&& original) noexcept : str_length(0), str_allocation(0), str(&a_null_byte)
+String::String(String&& original) noexcept : str(&a_null_byte), str_length(0), str_allocation(0)
 {
     if (messages_wanted)
         cout << "Move ctor: \"" << original << "\"" << endl;
@@ -74,7 +74,7 @@ String& String::operator= (const String& rhs)
 String& String::operator= (const char* rhs)
 {
     if (messages_wanted)
-        cout << "Move assign from String:  \"" << rhs << "\"" << endl;
+        cout << "Assign from C-string:  \"" << rhs << "\"" << endl;
     String temp(rhs);
     swap(temp);
     return *this;
@@ -83,7 +83,7 @@ String& String::operator= (const char* rhs)
 String& String::operator= (String&& rhs) noexcept
 {
     if (messages_wanted)
-        cout << "Assign from C-string:  \"" << rhs << "\"" << endl;
+        cout << "Move assign from String:  \"" << rhs << "\"" << endl;
     swap(rhs);
     return *this;
 }
@@ -178,9 +178,9 @@ String& String::operator += (char rhs)
         total_allocation += str_allocation - pre_allocation;
         char *new_str = new char[str_allocation];
         strcpy(new_str, str);
-        str[str_length] = rhs;
+        new_str[str_length] = rhs;
         str_length += 1;
-        str[str_length] = '\0';
+        new_str[str_length] = '\0';
         if (pre_allocation)
             delete[] str;
         str = new_str;
