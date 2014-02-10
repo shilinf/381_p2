@@ -42,7 +42,7 @@ an exception is thrown, no memory is leaked and the exception is propagated out 
 the client code to catch. In addition, the relevant operations also provide the strong 
 exception guarantee - if an attempt to modify an Ordered_list fails, it is left in i
 ts original state, and the exception is propagated out to the client code to catch. 
-Finally, many operations also provide the no-throw guarantee and are specified 
+Finally, many operations also provide the no-throw guarantee and are specified
 with noexcept. See comments on individual member functions for specifics.
  
 To find an object in the list that matches a supplied "probe" object, the ordering 
@@ -165,11 +165,11 @@ public:
 
 	// Return the number of nodes in the list
 	int size() const
-		{/* fill this in */}
+        {return num_node;}
 
 	// Return true if the list is empty
 	bool empty() const
-		{/* fill this in */}
+        {return num_node ? false : true;}
 		
 private:
 	// Node is a nested class that is private to the Ordered_list<T, OF> class.
@@ -202,6 +202,7 @@ private:
 		Node* next; // pointer to next node
 		};
 		
+    
 	public:
 	// An Iterator object designates a Node by encapsulating a pointer to the Node, 
 	// and provides Standard Library-style operators for using, manipulating,
@@ -217,7 +218,7 @@ private:
 			// Overloaded dereferencing operators
 			// * returns a reference to the datum in the pointed-to node
 			T& operator* () const
-				{/* fill this in */}
+                {assert(node_ptr); return node_ptr->datum;}                                    // Is the assert here necessary?
 			// operator-> simply returns the address of the data in the pointed-to node.
 			// *** For this operator, the compiler reapplies the -> operator with the returned pointer.
 			/* *** definition supplied here because it is a special-case of operator overloading. */
@@ -228,36 +229,40 @@ private:
 			// and returns this iterator.
 			Iterator& operator++ ()	// prefix
 				{	
-					/* fill this in */
+					node_ptr = node_ptr->next;
+                    return *this;
 				}
 			// postfix ++ operator saves the current address for the pointed-to node,
 			// moves this iterator to point to the next node, and returns
 			// an interator pointing to the node at the saved address.
 			Iterator operator++ (int)	// postfix
 				{	
-					/* fill this in */
+                    Iterator temp(node_ptr);
+                    node_ptr = node_ptr->next;
+                    return temp;
 				}
 			// Iterators are equal if they point to the same node
 			bool operator== (Iterator rhs) const
-				{/* fill this in */}
+                {return node_ptr == rhs.node_ptr ? true : false;}
 			bool operator!= (Iterator rhs) const
-				{/* fill this in */}
+				{return node_ptr == rhs.node_ptr ? false : true;}
 	
-			// *** here, declare the outer Ordered_list class as a friend		
-
+			// *** here, declare the outer Ordered_list class as a friend		  ????? why we need to do this ??????????????
+            friend class Ordered_list;
 		private:
 			/* *** define here a private constructor for Iterator that takes a Node* parameter.
 			Ordered_list can use this to create Iterators conveniently initialized to point to a Node.
 			It is private because the client code can't and shouldn't be using it - it isn't even supposed to
 			know about the Node objects.  */
 			/* *** you may have other private member functions, but not member variables */
+            Iterator(Node* node_ptr_init) : node_ptr(node_ptr_init){}
 			Node* node_ptr;
 		};
 	// end of nested Iterator class declaration
 	
 	// return an iterator pointing to the first node
 	Iterator begin() const
-		{/* fill this in */}
+        {return Iterator(first);}
 	// return an iterator pointing to "past the end"
 	Iterator end() const
 		{return Iterator(nullptr);}	// same as next pointer of last node
@@ -292,6 +297,11 @@ private:
 	// member variable declaration for the ordering function object.
 	OF ordering_f;
 	/* *** other private member variables and functions are your choice. */
+    
+    Node *first;
+    Node *last;
+    int num_node;
+    void push_back(const T& new_datum);
 };
 
 // These function templates are given two iterators, usually .begin() and .end(),
@@ -312,14 +322,16 @@ void apply(IT first, IT last, F function)
 template<typename IT, typename F, typename A>
 void apply_arg(IT first, IT last, F function, A arg)
 {
-// *** fill this in.
+	for(; first != last; ++first)
+		function(*first, arg);
 }
 
 // this function templates accept the second argument by reference - useful for streams.
 template<typename IT, typename F, typename A>
 void apply_arg_ref(IT first, IT last, F function, A& arg)
 {
-// *** fill this in.
+	for(; first != last; ++first)
+		function(*first, arg);
 }
 
 // the function must return true/false; apply the function until true is returned,
@@ -338,18 +350,178 @@ bool apply_if(IT first, IT last, F function)
 template<typename IT, typename F, typename A>
 bool apply_if_arg(IT first, IT last, F function, A arg)
 {
-// *** fill this in.
+	for(; first != last; ++first)
+		if(function(*first, arg))
+			return true;
+	return false;
 }
 
 /* *** Put your code for Ordered_list member functions here, defined outside the class declaration.
-For example:
+ For example: */
+
+
 
 template<typename T, typename OF>
-void Ordered_list<T, OF>::erase(Iterator it)
+Ordered_list<T, OF>::Ordered_list() : num_node(0), first(nullptr), last(nullptr) {}
+
+
+
+template<typename T, typename OF>
+Ordered_list<T, OF>::Ordered_list(const Ordered_list& original) : num_node(0), first(nullptr), last(nullptr), ordering_f(original.ordering_f)
 {
-	your code here
+    Ordered_list<T, OF> local_list;
+    local_list.ordering_f = original.ordering_f;
+    for(Iterator it = begin(); it != end(); ++it)
+        local_list.push_back(*it);
+    swap(local_list);
 }
- 
-*/
+
+template<typename T, typename OF>
+void Ordered_list<T, OF>::push_back(const T& new_datum)
+{
+    if (num_node) {
+        Node *new_node = new Node(new_datum, last, nullptr);
+        last->next = new_node;
+        last = new_node;
+    }
+    else {
+        Node *new_node = new Node(new_datum, nullptr, nullptr);
+        first = new_node;
+        last = new_node;
+    }
+}
+
+
+
+
+// Move construct this list from another list by taking its data,
+// leaving the original in an empty state (like when default constructed).
+// Since no type T data is copied, no exceptions are possible,
+// so the no-throw guarantee is made.
+template<typename T, typename OF>
+Ordered_list<T, OF>::Ordered_list(Ordered_list&& original) noexcept : num_node(0), first(nullptr), last(nullptr) {swap(original);}
+
+
+
+// The insert functions add the new datum to the list using the ordering function.
+// If an "equal" object is already in the list, then the new datum object
+// is placed in the list before the "equal" one that is already there.
+template<typename T, typename OF>
+void Ordered_list<T, OF>::insert(const T& new_datum)
+{
+    Node *find_insert_position = first;
+    if (!num_node) {
+        Node *new_node = new Node(new_datum, nullptr, nullptr);
+        first = new_node;
+        last = new_node;
+    }
+    else if(!ordering_f(first->datum, new_datum)) {
+        Node *new_node = new Node(new_datum, nullptr, first);
+        first = new_node;
+    }
+    else if(ordering_f(last->datum, new_datum)) {
+        Node *new_node = new Node(new_datum, last, nullptr);
+        last = new_node;
+    }
+    else {
+        while (ordering_f(find_insert_position->datum, new_datum))
+            find_insert_position = find_insert_position->next;
+        Node *new_node = new Node(new_datum, find_insert_position->prev, find_insert_position);
+        find_insert_position->prev->next = new_node;
+        find_insert_position->prev = new_node;
+    }
+}
+
+template<typename T, typename OF>
+Ordered_list<T, OF>::~Ordered_list()
+{
+    for(Iterator it = begin(); it != end(); ++it)
+        delete it.node_ptr;
+}
+
+
+template<typename T, typename OF>
+void Ordered_list<T, OF>::clear() noexcept
+{
+    for(Iterator it = begin(); it != end(); ++it)
+        delete it.node_ptr;
+    num_node = 0;
+    first = nullptr;
+    last = nullptr;
+}
+
+
+
+// Interchange the member variable values of this list with the other list;
+// Only the pointers, size, and ordering_functions are interchanged;
+// no allocation or deallocation of list Nodes is done.
+// Thus the no-throw guarantee can be provided.
+template<typename T, typename OF>
+void Ordered_list<T, OF>::swap(Ordered_list & other) noexcept    // ?????????????????? could we use the std::swap??
+{
+    std::swap(num_node, other.num_node);
+    std::swap(first, other.first);
+    std::swap(last, other.last);
+    std::swap(ordering_f, other.ordering_f);
+}
+
+
+template<typename T, typename OF>
+void Ordered_list<T, OF>::erase(Iterator it) noexcept
+{
+    Node *node = it.node_ptr;
+    if(!node->prev && !node->next) {
+        first = nullptr;
+        last = nullptr;
+    }
+    else if(!node->prev) {
+        first = node->next;
+        node->next->prev = nullptr;
+    }
+    else if(!node->next) {
+        last = node->prev;
+        node->prev->next = nullptr;
+    }
+    else {
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
+    }
+}
+
+
+
+// The find function returns an iterator designating the node containing
+// the datum that according to the ordering function, is equal to the
+// supplied probe_datum; end() is returned if the node is not found.
+// If more than one item is equal to the probe, the returned iterator
+// points to the first one. If a matching item is not present, the scan is
+// terminated as soon as possible by detecting when the scan goes past where
+// the matching item would be.
+
+template<typename T, typename OF>
+typename Ordered_list<T, OF>::Iterator Ordered_list<T, OF>::find(const T& probe_datum) const noexcept
+{
+    Iterator it = begin();
+    while(it.node_ptr) {
+        if(ordering_f(*it, probe_datum)) {
+            ++it;
+        }
+        else if(ordering_f(probe_datum, *it))
+            return end();
+        else
+            return it;
+    }
+    return it;
+}
 
 #endif
+
+
+
+
+
+
+
+
+
+

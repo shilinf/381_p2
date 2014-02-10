@@ -53,6 +53,9 @@ in the .cpp file.
 Comments starting with "***" are instructions to you - remove them from your finished code.
 Remove this comment too. */
 
+#include <iostream>
+
+
 // Simple exception class for reporting String errors
 struct String_exception {
 	String_exception(const char* msg_) : msg(msg_)
@@ -87,13 +90,13 @@ public:
 	// Accesssors
 	// Return a pointer to the internal C-string
 	const char* c_str() const	
-		{/*** fill this in */}
+        {return str;}
 	// Return size (length) of internal C-string in this String
 	int size() const
-		{/*** fill this in */}
+        {return str_length;}
 	// Return current allocation for this String
 	int get_allocation() const
-		{/*** fill this in */}
+        {return str_allocation;}
 		
 	// Return a reference to character i in the string.
 	// Throw exception if 0 <= i < size is false.
@@ -161,6 +164,8 @@ public:
 private:
 	/* *** Except for those listed below, your choice for private members */
 	
+    String(const String& original, int i, int len);
+    
 	static char a_null_byte;	// to hold a null byte for for empty string representation
 
 	/* Variables for monitoring functions - not part of a normal implementation. */
@@ -168,7 +173,10 @@ private:
 	static int number;				// counts number of String objects in existence
 	static int total_allocation;	// counts total amount of memory allocated
 	static bool messages_wanted;	// whether to output constructor/destructor/operator= messages, initially false
-
+    
+    char *str;
+    int str_length;
+    int str_allocation;
 };
 
 // non-member overloaded operators

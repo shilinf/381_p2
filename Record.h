@@ -10,7 +10,11 @@ in the .cpp file.
 Comments starting with "***" are instructors to you - remove them from your finished code.
 Remove this comment too. */
 
+#include "String.h"
+#include <iostream>
 
+
+class Record {
 public:
 	// Create a Record object, giving it a unique ID number by first incrementing
 	// a static member variable then using its value as the ID number. The rating is set to 0.
@@ -42,18 +46,18 @@ public:
 
 	// Accessors
 	int get_ID() const
-		{/*** fill this in */}
+        {return ID;}
 	String get_title() const
-		{/*** fill this in */}
+        {return title;}
 	// reset the ID counter
 	static void reset_ID_counter() 
-		{/*** fill this in */}
+        {ID_counter = 0;}
 	// save the ID counter in another static member variable
 	static void save_ID_counter() 
-		{/*** fill this in */}
+        {ID_counter_backup = ID_counter;}
 	// restore the ID counter from the value in the other static member variable
 	static void restore_ID_counter() 
-		{/*** fill this in */}
+        {ID_counter = ID_counter_backup;}
 	// if the rating is not between 1 and 5 inclusive, an exception is thrown
 	void set_rating(int rating_);
 	
@@ -63,19 +67,23 @@ public:
 
 	// This operator defines the order relation between Records, based just on the last title
 	bool operator< (const Record& rhs) const
-		{/*** fill this in */}
+        {return title < rhs.title;}
 
 	/* *** fill in a friend declaration for the output operator */
+    friend std::ostream& operator<< (std::ostream& os, const Record& record);
 
 private:
 	static int ID_counter; // must be initialized to zero.
+    static int ID_counter_backup;
 	/* *** another static member variable for the backup value of iD_counter; name is your choice */
 	/* *** other private members are your choice */
+    int ID;
+    int rate;
+    String title;
+    String medium;
+};
 
-	
-
-
-// Print a Record's data to the stream without a final endl. 
+// Print a Record's data to the stream without a final endl.
 // Output order is ID number followed by a ':' then medium, rating, title, separated by one space.
 // If the rating is zero, a 'u' is printed instead of the rating.
 std::ostream& operator<< (std::ostream& os, const Record& record);

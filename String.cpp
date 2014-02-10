@@ -49,6 +49,7 @@ String::String(String&& original) noexcept : str_length(0), str_allocation(0), s
     if (messages_wanted)
         cout << "Move ctor: \"" << original << "\"" << endl;
     swap(original);
+    ++number;
 }
 
 String::~String() noexcept
