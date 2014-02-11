@@ -1,4 +1,5 @@
 #include "String.h"
+#include <cstring>
 #include <new>
 
 using std::string;
