@@ -2,15 +2,27 @@
 #include "Utility.h"
 #include <fstream>
 
+void discard_file_input_remainder(std::ifstream& is);
+
+void save_Record_name(Record* record_ptr, std::ostream& os);
 
 Collection::Collection(std::ifstream& is, const Ordered_list<Record*, Less_than_ptr<Record*>>& library)
 {
-    
-
-
-
-
-
+    int num_records;
+    if (!(is >> name >> num_records))
+        throw Error("Invalid data found in file!");
+    discard_file_input_remainder(is);
+    for (int i = 0; i < num_records; ++i) {
+        String title;
+        char new_line;
+        getline(is, title);
+        is >> new_line;
+        Record temp(title);
+        auto find_Record_item_iterator = library.find(&temp);
+        if (find_Record_item_iterator == library.end())
+            throw Error("Invalid data found in file!");
+        add_member(*find_Record_item_iterator);
+    }
 }
 
 
@@ -37,18 +49,33 @@ void Collection::remove_member(Record* record_ptr)
 
 void Collection::save(std::ostream& os) const
 {
-    
+    os << name << " " << members.size() << endl;
+    apply_arg_ref(members.begin(), members.end(), save_Record_name, os);
 
 
+}
+
+void save_Record_name(Record* record_ptr, std::ostream& os)
+{
+    os << record_ptr->get_title() << endl;
 }
 
 std::ostream& operator<< (std::ostream& os, const Collection& collection)
 {
-
-
-
+    os << "Collection " << collection.name << " contains:";
+    if (collection.empty())
+        os << " None" << endl;
+    else {
+        apply_arg_ref(collection.members.begin(), collection.members.end(), print_Record, os);
+    }
     return os;
 }
 
-
+/* discard input remaining on the current line */
+void discard_file_input_remainder(std::ifstream& is)
+{
+    while (is.get() != '\n') {
+        ;
+    }
+}
 

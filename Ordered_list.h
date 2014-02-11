@@ -1,4 +1,4 @@
-/* Ordered_list is a linked-list class template  with iterators similar to 
+/* Ordered_list is a linked-list class template  with iterators similar to
 the Standard Library std::list class. Each list node contains an object of the type 
 specified in the first template parameter, T.
 
@@ -94,9 +94,19 @@ Remove this comment too. */
 #include "p2_globals.h"
 #include <utility>
 #include <cassert>
+#include <new>
 
-#include <iostream>
-using namespace std;
+#include <iostream>// for debug
+using namespace std; //for debug
+
+
+
+
+
+
+
+
+
 // These Function Object Class templates make it simple to use a class's less-than operator
 // for the ordering function in declaring an Ordered_list container.
 // These declare operator() as a const member function because the function does
@@ -522,6 +532,7 @@ void Ordered_list<T, OF>::erase(Iterator it) noexcept
         node->prev->next = node->next;
         node->next->prev = node->prev;
     }
+    delete node;
     --num_node;
 }
 

@@ -1,3 +1,7 @@
+#ifndef COLLECTION_H
+#define COLLECTION_H
+
+
 /* Collections contain a name and a container of members,
 represented as pointers to Records.
 Collection objects manage their own Record container. 
@@ -62,3 +66,5 @@ private:
 
 // Print the Collection data
 std::ostream& operator<< (std::ostream& os, const Collection& collection);
+
+#endif

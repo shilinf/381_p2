@@ -1,4 +1,6 @@
-/* 
+#ifndef STRING_H
+#define STRING_H
+/*
 String class - a subset of the C++ Standard Library <string> class
 String objects contain a C-string in a dynamically allocated piece of memory and 
 support input/output, comparisons, copy/move construction and assignment, 
@@ -213,3 +215,5 @@ str's allocation is expanded as needed, and it retains the final allocation.
 If the input stream fails, str contains whatever characters were read. */
 std::istream& getline(std::istream& is, String& str);
 
+
+#endif

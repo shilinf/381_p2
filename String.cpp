@@ -1,5 +1,5 @@
 #include "String.h"
-
+#include <new>
 
 using std::string;
 using std::cout; using std::endl;

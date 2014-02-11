@@ -1,4 +1,7 @@
-/* 
+#ifndef RECORD_H
+#define RECORD_H
+
+/*
 A Record ontains a unique ID number, a rating, and a title and medium name as Strings.
 When created, a Record is assigned a unique ID number. The first Record created
 has ID number == 1.
@@ -87,3 +90,6 @@ private:
 // Output order is ID number followed by a ':' then medium, rating, title, separated by one space.
 // If the rating is zero, a 'u' is printed instead of the rating.
 std::ostream& operator<< (std::ostream& os, const Record& record);
+
+#endif
+
