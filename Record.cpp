@@ -12,10 +12,10 @@ int Record::ID_counter_backup = 0;
 Record::Record(const String& medium_, const String& title_) : ID(++ID_counter), rate(0), title(title_), medium(medium_) {}
 
 
-Record::Record(const String& title_) : ID(0), rate(0), title(title_) {}
+Record::Record(const String& title_) : ID(0), rate(0), title(title_){}
 
 
-Record::Record(int ID_) : ID(ID_), rate(0) {}
+Record::Record(int ID_) : ID(ID_), rate(0){}
 
 
 Record::Record(std::ifstream& is)

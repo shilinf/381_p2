@@ -238,7 +238,7 @@ void find_Record_match_title(void)
     auto find_item_iterator = library_ordered_by_title.find(&find_temp);
 
     if (find_item_iterator != library_ordered_by_title.end())
-        cout << *find_item_iterator;
+        cout << **find_item_iterator;
     else
         throw Error("No record with that title!\n");
 }
@@ -253,7 +253,7 @@ void print_Record_match_id(void)
     auto find_item_iterator = library_ordered_by_id.find(&find_temp);
 
     if (find_item_iterator != library_ordered_by_id.end())
-        cout << *find_item_iterator;
+        cout << **find_item_iterator;
     else
         throw Error("No record with that ID!\n");
 }
@@ -405,9 +405,17 @@ void delete_Record_from_Library(void)
         throw Error("No record with that title!");
     if (apply_if_arg(catalog.begin(), catalog.end(), check_record_in_Collection, *find_Record_item_iterator))
         throw Error("Cannot delete a record that is a member of a collection!");
+    
+    //cout << "lala" <<endl;
+    
     int record_ID = (*find_Record_item_iterator)->get_ID();
     library_ordered_by_title.erase(find_Record_item_iterator);
+    
+    //cout << "11" <<endl;
+    
     Record temp_id(record_ID);
+    
+    //cout << "dada" <<endl;
     library_ordered_by_id.erase(library_ordered_by_id.find(&temp_id));
     delete (*find_Record_item_iterator);
     cout << "Record " << record_ID << " " << title << " deleted" <<endl;
@@ -671,7 +679,7 @@ int trim_title(String &title)
 {
     int valid = 0, i = 0;
     while (i < title.size()) {
-        while (isspace(title[i]))
+        while (i < title.size() && isspace(title[i]))
             title.remove(i, 1);
         while (i < title.size() && !isspace(title[i])) {
             ++i;
