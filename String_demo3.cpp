@@ -46,6 +46,7 @@ This is called "constructor elision" - from "elide", meaning "to omit", from the
 	String b(a);
     cout << "Construct c from a + b" << endl;
     String c(a + b);
+        cout <<"lala"<<endl;
     cout << "a:" << a << " b:" << b << " c:" << c << endl;
     cout << "Construct d from function return value" << endl;
     String d(test_fn2());
