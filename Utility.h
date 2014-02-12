@@ -15,7 +15,9 @@ struct Error {
 
 /*  *** add any other functions or declarations here and define in Utility.cpp */
 
-void print_Record (Record *data_ptr, std::ostream& os);
+//void print_Record (Record *data_ptr, std::ostream& os);
 
+
+void swap_int (int &first, int &second);
 
 #endif
