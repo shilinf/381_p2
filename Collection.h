@@ -1,7 +1,6 @@
 #ifndef COLLECTION_H
 #define COLLECTION_H
 
-
 /* Collections contain a name and a container of members,
 represented as pointers to Records.
 Collection objects manage their own Record container. 
@@ -11,11 +10,6 @@ The container of Records is not available to clients.
 #include "Ordered_list.h"
 #include "Record.h"
 
-/* *** NOTE: If after a function header is a comment "fill this in" remove the comment and replace
-it with the proper code here in the header file.  All other functions should be defined
-in the .cpp file. 
-Comments starting with "***" are instructions to you - remove them from your finished code.
-Remove this comment too. */
 class Collection {
 public:
 	// Construct a collection with the specified name and no members
@@ -53,14 +47,10 @@ public:
 	bool operator< (const Collection& rhs) const
         {return name < rhs.name;}
 	
-	/* *** fill in a friend declaration for the output operator */
     friend std::ostream& operator<< (std::ostream& os, const Collection& collection);
     
 private:
-	/* *** the member information must be kept in a container of Record* - name is your choice */
     Ordered_list<Record*, Less_than_ptr<Record*>> members;
-
-	/* *** other private members are your choice */
     String name;
 };
 

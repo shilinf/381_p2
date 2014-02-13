@@ -49,12 +49,6 @@ in these messages being output, but only because they call a constructor, destru
 or assignment operator as part of their work.
 */
 
-/* *** NOTE: If after a function header is a comment "fill this in" remove the comment and replace
-it with the proper code here in the header file.  All other functions should be defined
-in the .cpp file. 
-Comments starting with "***" are instructions to you - remove them from your finished code.
-Remove this comment too. */
-
 #include <iostream>
 
 
@@ -164,10 +158,6 @@ public:
 		{messages_wanted = messages_wanted_;}
 	
 private:
-	/* *** Except for those listed below, your choice for private members */
-	
-    String(const String& original, int i, int len);
-    
 	static char a_null_byte;	// to hold a null byte for for empty string representation
 
 	/* Variables for monitoring functions - not part of a normal implementation. */
@@ -176,9 +166,12 @@ private:
 	static int total_allocation;	// counts total amount of memory allocated
 	static bool messages_wanted;	// whether to output constructor/destructor/operator= messages, initially false
     
+    String(const String& original, int i, int len); // constructor for substring
+    void constructor_helper(const char* cstr_, int len);
     char *str;
     int str_length;
     int str_allocation;
+    
 };
 
 // non-member overloaded operators

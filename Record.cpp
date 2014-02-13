@@ -1,32 +1,25 @@
 #include "Record.h"
 #include "Utility.h"
 #include <fstream>
-
-using std::endl;
+#include <iostream>
 
 int Record::ID_counter = 0;
+
 int Record::ID_counter_backup = 0;
-
-
 
 Record::Record(const String& medium_, const String& title_) : ID(++ID_counter), rate(0), title(title_), medium(medium_) {}
 
+Record::Record(const String& title_) : ID(0), rate(0), title(title_) {}
 
-Record::Record(const String& title_) : ID(0), rate(0), title(title_), medium(""){}
-
-
-Record::Record(int ID_) : ID(ID_), rate(0), title(""), medium(""){}
-
+Record::Record(int ID_) : ID(ID_), rate(0) {}
 
 Record::Record(std::ifstream& is)
 {
     if (!(is >> ID >> medium >> rate && is.get() && getline(is, title)))
         throw Error("Invalid data found in file!");
-    
     if (ID > ID_counter)
         ID_counter = ID;
 }
-
 
 void Record::set_rating(int rating_)
 {
@@ -36,12 +29,10 @@ void Record::set_rating(int rating_)
         throw Error("Rating is out of range!");
 }
 
-
 void Record::save(std::ostream& os) const
 {
-    os << ID << " " << medium << " " << rate << " " << title << endl;
+    os << ID << " " << medium << " " << rate << " " << title << std::endl;
 }
-
 
 std::ostream& operator<< (std::ostream& os, const Record& record)
 {

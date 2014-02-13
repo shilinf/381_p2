@@ -4,6 +4,7 @@
 #include "Utility.h"
 #include <iostream>
 #include <fstream>
+#include <new>
 
 using std::cin; using std::cout; using std::endl;
 using std::ifstream; using std::ofstream;
@@ -38,13 +39,7 @@ void save_all_data(void);
 void restore_all_data(void);
 void quit(void);
 
-/* compare functions for OC_comp_fp_t
-int compare_Record_id(const void* data_ptr1, const void* data_ptr2);
-int compare_Collection_name(const void* data_ptr1, const void* data_ptr2);
-int compare_id_with_Record(const void* arg_ptr, const void* data_ptr);
-int compare_name_with_Collection(const void* arg_ptr, const void* data_ptr);
-*/
- 
+
 /* implementation for OC_apply_if_arg_fp_t */
 bool check_record_in_Collection (Collection collection, Record *arg_ptr);
 
@@ -52,7 +47,6 @@ bool check_record_in_Collection (Collection collection, Record *arg_ptr);
 bool check_Collection_empty (Collection collection);
 
 /* implementation for OC_apply_fp_t*/
-void print_Collection (Collection &collection_data, std::ostream& os);
 void free_Record(Record *record_ptr);
 //void OC_destory_Collection(void *data_ptr);
 
@@ -277,10 +271,8 @@ void print_Records(void)
         cout << "Library is empty" << endl;
     else {
         cout << "Library contains " << library_ordered_by_title.size() << " records:" <<endl;
-        apply_arg_ref(library_ordered_by_title.begin(), library_ordered_by_title.end(), print_Record, cout);
-        
-        //cout << "id Library" <<endl;
-        //apply_arg_ref(library_ordered_by_id.begin(), library_ordered_by_id.end(), print_Record, cout);
+        for (auto record_ptr : library_ordered_by_title)
+            cout << *record_ptr <<endl;
     }
 }
 
@@ -292,15 +284,9 @@ void print_Catalog(void)
     }
     else {
         cout << "Catalog contains " << catalog.size() << " collections:" <<endl;
-        apply_arg_ref(catalog.begin(), catalog.end(), print_Collection, cout);
+        for (auto iterator = catalog.begin(); iterator != catalog.end(); ++iterator)
+            cout << *iterator;
     }
-}
-
-
-/* print the collection passed in */
-void print_Collection (Collection &collection_data, std::ostream& os)
-{
-    os << collection_data;
 }
 
 

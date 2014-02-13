@@ -7,15 +7,7 @@ When created, a Record is assigned a unique ID number. The first Record created
 has ID number == 1.
 */
 
-/* *** NOTE: If after a function header is a comment "fill this in" remove the comment and replace
-it with the proper code here in the header file.  All other functions should be defined
-in the .cpp file. 
-Comments starting with "***" are instructors to you - remove them from your finished code.
-Remove this comment too. */
-
 #include "String.h"
-#include <iostream>
-
 
 class Record {
 public:
@@ -72,14 +64,11 @@ public:
 	bool operator< (const Record& rhs) const
         {return title < rhs.title;}
 
-	/* *** fill in a friend declaration for the output operator */
     friend std::ostream& operator<< (std::ostream& os, const Record& record);
 
 private:
 	static int ID_counter; // must be initialized to zero.
     static int ID_counter_backup;
-	/* *** another static member variable for the backup value of iD_counter; name is your choice */
-	/* *** other private members are your choice */
     int ID;
     int rate;
     String title;
@@ -92,4 +81,3 @@ private:
 std::ostream& operator<< (std::ostream& os, const Record& record);
 
 #endif
-
