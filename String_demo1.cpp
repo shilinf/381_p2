@@ -1,197 +1,96 @@
-// demonstrate some of the features of the String class
+// Demonstrate compiler-supplied copy and move at work
+// using a Thing class that contains a String member variable.
+// The String monitoring functions shows what the compiler-supplied
+// functions do with the String class member variable.
 
 #include "String.h"
 #include <iostream>
+
 using namespace std;
 
-void print_info(const String& s);
+// this function outputs the number and memory usage of all strings
+void print_String_info();
 
-String test_fn(String s);
+// The class contains an int and a String ID member and
+// anint ID number member initialized in the constructor.
+// All of the Rule of 5 member functions are supplied by the compiler.
+
+class Thing {
+public:
+	Thing(const char* id_) : id(id_), id_number(++id_counter)
+    {
+        cout << "Thing " << id_number << " with ID " << id_number << " constructed" << endl;
+    }
+    // Compiler supplies copy & move constructors and assignment operators and destructor
+	friend ostream& operator<< (ostream& os, const Thing& t);
+private:
+	String id;
+    int id_number;
+    static int id_counter;
+};
+
+ostream& operator<< (ostream& os, const Thing& t)
+{
+	os << "Thing" << t.id_number << "-\"" << t.id << "\"";
+	return os;
+}
+
+int Thing::id_counter = 0;
+
+Thing test_fn1();
+Thing test_fn2(Thing t);
 
 
 int main ()
 {
-	// in case there is an exception thrown
-	try {
-        
-        // constructors
-        String s0, s1 ("Tom"), s2 ("Dick"), s3 ("Harry");
-        String s4(s3);
-        
-        
-        cout << s4.substring(2,3)<<endl;
-        s4 += s0;
-        cout << s4 <<endl;
-        
-        s4 = s4 + s4;
-        
-        cout << s4 <<endl;
-        
-        cin>>s0;
-        getline(cin, s0);
-        cout <<s0<<endl;
-        /*
-        
-        
-        
-        // access internal info
-        print_info(s0);
-        print_info(s1);
-        print_info(s2);
-        print_info(s3);
-        print_info(s4);
-        
-        // output operator |'s show where each output starts and stops
-        cout << '|' << s0 << '|' << s1 << '|' << s2 << '|' << s3 << '|' << s4 << '|' << endl;
-        
-        // internal info and assignment to other String
-        print_info(s4);
-        s4 = s2;
-        print_info(s4);
-        
-        // assignment to c-string
-        s4 = "howdy there, pardner!";
-        print_info(s4);
-        
-        // copy ctor
-        cout << "call test_fn with : " << s3 << endl;
-        s4 = test_fn(s3);
-        s3 = "s3's new data";
-        cout << "result from test_fn: " << s4 << endl;
-        
-        // comparison operators
-        
-        if (s1 == s2)
-            cout << s1 << " == " << s2 << endl;
-        else
-            cout << s1 << " != " << s2 << endl;
-        
-        if (s1 < s2)
-            cout << s1 << " < " << s2 << endl;
-        else
-            cout << s1 << " >= " << s2 << endl;
-		
-        if (s1 < "Dick")
-            cout << s1 << " < \"Dick\"" << endl;
-        else
-            cout << s1 << " >=  \"Dick\"" << endl;
-		
-        if ("Tom" > "Dick")
-            cout << "\"Tom\" is greater than \"Dick\"" << endl;
-        else
-            cout << "\"Tom\" is not greater than \"Dick\"" << endl;
-        
-        // concatenation functions
-        String target;
-        print_info(target);
-        target = target + "abc";
-        print_info(target);
-        target += 'd';
-        print_info(target);
-        target += "efg";
-        print_info(target);
-        target += "hijklmnop";
-        print_info(target);
-        target += "qrs";
-        print_info(target);
-        target = target + String("tuv");
-        print_info(target);
-        target = target + "wxyz";
-        print_info(target);
-        target = String("456") + target;
-        print_info(target);
-        target = "123" + target;
-        print_info(target);
-        cout << "Concatenation results: " << target << endl;
-        
-        // insert_before
-        String str("0123456789");
-        print_info(str);
-        String ins("abc");
-        str.insert_before(2, ins);
-        print_info(str);
-        str.insert_before(str.size(), ins);
-        print_info(str);
-        
-        // remove
-        str = "0123456789";
-        print_info(str);
-        str.remove(0, 5);
-        print_info(str);
-        str = "0123456789";
-        str.remove(9, 1);
-        print_info(str);
-        
-        // substring
-        str = "abcdefghij";
-        String sub;
-        sub = str.substring(0,3);
-        print_info(sub);
-        sub = str.substring(6, 4);
-        print_info(sub);
-        
-        // subscripting
-        str = "0123456789";
-        print_info(str);
-        str[3] = str[9];
-        print_info(str);
-        
-        
-        String input;
-        
-        // input operator
-        cout << "String input: ";
-        print_info(input);
-        cout << "enter three strings on the same or different lines:" << endl;
-        enter a short, medium, and long string to see different allocations at work */
-        /*
-        cin >> input;
-        cout << "String input: ";
-        print_info(input);
-        
-        cin >> input;
-        cout << "String input: ";
-        print_info(input);
-        
-        cin >> input;
-        cout << "String input: ";
-        print_info(input);
-        
-        // assign input results to another string
-        s4 = input;
-        print_info(s4);
-        
-        // copy input results to another string with copy ctor
-        String s5(input); 
-        print_info(s5);
-        */
-        
-	} // end of try block
+	String::set_messages_wanted(true);
 	
-	catch(String_exception& x) {
-		cout << "String exception caught: " << x.msg << endl;
+    {
+        Thing t1{"Xavier"};
+        cout << "t1 is: " << t1 << endl;
+        cout << "\nConstruct t2 from t1" << endl;
+        Thing t2(t1);
+        cout << "t2 is: " << t2 << endl;
+        cout << "\nConstruct t3 from an unnamed temporary" << endl;
+        Thing t3(Thing{"Cugat"});
+        cout << "t3 is: " << t3 << endl;
+        cout << "\nConstruct t4 from a function return value" << endl;
+        Thing t4(test_fn1());
+        cout << "t4 is: " << t4 << endl;
+        cout << "\nAssign t2 = t4" << endl;
+        t2 = t4;
+        cout << "t2 now is: " << t2 << endl;
+        
+        cout << "\nAssign t3 to returned function value" << endl;
+        t3 = test_fn1();
+        cout << "t3 now is: " << t3 << endl;
+        
+        cout << "\nGive t3 to a function that returns its by value parameter and set t4 to the returned value" << endl;
+        t4 = test_fn2(t3);
+        cout << "t4 now is: " << t4 << endl;
+        
+        cout << "\n\nleaving scope" << endl;
     }
-	catch(...) {
-		cout << "Unknown exception caught! " << endl;
-    }
-    
-    
-	cout << "Finished" << endl;
 	
-	return 0;
+    
 }
 
 
-String test_fn(String s)
+Thing test_fn1()
 {
-	cout << "in test_fn:" << endl;
-	String ss(s);
-	ss += " was inside test_fn";
-	cout << "test_fn got " << s << " and is returning: " << ss << endl;
-	return ss;
+	cout << "in test_fn1:" << endl;
+    Thing t{"Carmen"};
+    return t;
 }
 
-void print_info(const String& s)
+// returning the by-value parameter variable inhibits constructor elision
+// - the Returned Value Optimization is not performed.
+Thing test_fn2(Thing t)
 {
-    cout << "String contains \""  << s.c_str() << "\", length is " << s.size() << ", allocation is " << s.get_allocation() << endl;
+    cout << "In test_f2: by-value parameter t is: " << t << endl;
+    cout << "Assign by-value parameter t to a different value" << endl;
+    t = Thing{"Miranda"};
+    cout << "t now is: " << t << endl;
+    cout << "Return the by-value parameter by value" << endl;
+    return t;
 }

@@ -1,9 +1,9 @@
 #include "Collection.h"
-#include "Utility.h"
 #include "Record.h"
+#include "Utility.h"
 #include <fstream>
 
-using std::cout; using std::endl;
+using std::endl;
 
 Collection::Collection(std::ifstream& is, const Ordered_list<Record*, Less_than_ptr<Record*>>& library)
 {
@@ -11,7 +11,7 @@ Collection::Collection(std::ifstream& is, const Ordered_list<Record*, Less_than_
     if (!(is >> name >> num_records))
         throw Error("Invalid data found in file!");
     for (int i = 0; i < num_records; ++i) {
-        is.get();
+        is.get(); // read the new line character
         String title;
         getline(is, title);
         Record probe(title);

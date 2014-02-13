@@ -204,10 +204,8 @@ private:
 			// Overloaded dereferencing operators
 			// * returns a reference to the datum in the pointed-to node
 			T& operator* () const
-                {assert(node_ptr); return node_ptr->datum;}                                    // Is the assert here necessary?
+                {assert(node_ptr); return node_ptr->datum;}
 			// operator-> simply returns the address of the data in the pointed-to node.
-			// *** For this operator, the compiler reapplies the -> operator with the returned pointer.
-			/* *** definition supplied here because it is a special-case of operator overloading. */
 			T* operator-> () const
 				{assert(node_ptr); return &(node_ptr->datum);}
 
@@ -233,7 +231,6 @@ private:
 			bool operator!= (Iterator rhs) const
 				{return node_ptr == rhs.node_ptr ? false : true;}
 	
-			// *** here, declare the outer Ordered_list class as a friend		  ????? why we need to do this ??????????????
             friend class Ordered_list;
 		private:
             Iterator(Node* node_ptr_init) : node_ptr(node_ptr_init){}
@@ -275,12 +272,14 @@ private:
 	void swap(Ordered_list & other) noexcept;
 
 private:
+    
+    void push_back(const T& new_datum); // helper function for copy constructor
+    
 	// member variable declaration for the ordering function object.
 	OF ordering_f;
     Node *first;
     Node *last;
     int num_node;
-    void push_back(const T& new_datum);
 };
 
 // These function templates are given two iterators, usually .begin() and .end(),
@@ -366,7 +365,11 @@ void Ordered_list<T, OF>::push_back(const T& new_datum)
 }
 
 template<typename T, typename OF>
-Ordered_list<T, OF>::Ordered_list(Ordered_list&& original) noexcept : first(nullptr), last(nullptr), num_node(0) {swap(original);++g_Ordered_list_count;}
+Ordered_list<T, OF>::Ordered_list(Ordered_list&& original) noexcept : first(nullptr), last(nullptr), num_node(0)
+{
+    swap(original);
+    ++g_Ordered_list_count;
+}
 
 template<typename T, typename OF>
 Ordered_list<T, OF>& Ordered_list<T, OF>::operator= (const Ordered_list& rhs)
@@ -384,38 +387,6 @@ Ordered_list<T, OF>& Ordered_list<T, OF>::operator= (Ordered_list&& rhs) noexcep
     return *this;
 }
 
-template<typename T, typename OF>
-void Ordered_list<T, OF>::insert(const T& new_datum)
-{
-    Node *find_insert_position = first;
-    if (!num_node) {
-        //cout << "1!!" <<endl;
-        Node *new_node = new Node(new_datum, nullptr, nullptr);
-        first = new_node;
-        last = new_node;
-    }
-    else if(!ordering_f(first->datum, new_datum)) {
-        //cout << "2!!" <<endl;
-        Node *new_node = new Node(new_datum, nullptr, first);
-        first->prev = new_node;
-        first = new_node;
-    }
-    else if(ordering_f(last->datum, new_datum)) {
-        //cout << "3!!" <<endl;
-        Node *new_node = new Node(new_datum, last, nullptr);
-        last->next = new_node;
-        last = new_node;
-    }
-    else {
-        //cout << "4!!" <<endl;
-        while (ordering_f(find_insert_position->datum, new_datum))
-            find_insert_position = find_insert_position->next;
-        Node *new_node = new Node(new_datum, find_insert_position->prev, find_insert_position);
-        find_insert_position->prev->next = new_node;
-        find_insert_position->prev = new_node;
-    }
-    ++num_node;
-}
 
 template<typename T, typename OF>
 Ordered_list<T, OF>::~Ordered_list()
@@ -436,16 +407,36 @@ void Ordered_list<T, OF>::clear() noexcept
     last = nullptr;
 }
 
+
 template<typename T, typename OF>
-void Ordered_list<T, OF>::swap(Ordered_list & other) noexcept
+void Ordered_list<T, OF>::insert(const T& new_datum)
 {
-    
-    std::swap(num_node, other.num_node);
-    std::swap(first, other.first);
-    std::swap(last, other.last);
-    std::swap(ordering_f, other.ordering_f);
-    
+    if (!num_node) {
+        Node *new_node = new Node(new_datum, nullptr, nullptr);
+        first = new_node;
+        last = new_node;
+    }
+    else if(!ordering_f(first->datum, new_datum)) {
+        Node *new_node = new Node(new_datum, nullptr, first);
+        first->prev = new_node;
+        first = new_node;
+    }
+    else if(ordering_f(last->datum, new_datum)) {
+        Node *new_node = new Node(new_datum, last, nullptr);
+        last->next = new_node;
+        last = new_node;
+    }
+    else {
+        Node *find_insert_position = first;
+        while (ordering_f(find_insert_position->datum, new_datum))
+            find_insert_position = find_insert_position->next;
+        Node *new_node = new Node(new_datum, find_insert_position->prev, find_insert_position);
+        find_insert_position->prev->next = new_node;
+        find_insert_position->prev = new_node;
+    }
+    ++num_node;
 }
+
 
 template<typename T, typename OF>
 void Ordered_list<T, OF>::erase(Iterator it) noexcept
@@ -476,9 +467,8 @@ typename Ordered_list<T, OF>::Iterator Ordered_list<T, OF>::find(const T& probe_
 {
     Iterator it = begin();
     while(it.node_ptr) {
-        if(ordering_f(*it, probe_datum)) {
+        if(ordering_f(*it, probe_datum))
             ++it;
-        }
         else if(ordering_f(probe_datum, *it))
             return end();
         else
@@ -487,14 +477,13 @@ typename Ordered_list<T, OF>::Iterator Ordered_list<T, OF>::find(const T& probe_
     return it;
 }
 
+template<typename T, typename OF>
+void Ordered_list<T, OF>::swap(Ordered_list & other) noexcept
+{
+    std::swap(num_node, other.num_node);
+    std::swap(first, other.first);
+    std::swap(last, other.last);
+    std::swap(ordering_f, other.ordering_f);
+}
+
 #endif
-
-
-
-
-
-
-
-
-
-

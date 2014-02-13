@@ -167,10 +167,12 @@ private:
 	static bool messages_wanted;	// whether to output constructor/destructor/operator= messages, initially false
     
     String(const String& original, int i, int len); // constructor for substring
-    void constructor_helper(const char* cstr_, int len);
+    void constructor_helper(const char* cstr_);
     void insert_before_helper(int i, const char *cstr);
-    void copy_helper(int i, char* str_desti, const char* src_insert);
+    void copy_helper(int i, char* str_desti, const char* src_insert); // a copy function used in insert_before_helper
     void delete_helper();
+    
+    
     char *str;
     int str_length;
     int str_allocation;
