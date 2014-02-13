@@ -546,9 +546,14 @@ void restore_all_data(void)
 {
     String file_name;
     cin >> file_name;
+    //cout << file_name<<endl;
+    
     ifstream input_file(file_name.c_str());
     if (!input_file.is_open())
         throw Error("Could not open file!");
+    
+    
+    //cout << "what happend?"<<endl;
     Ordered_list<Collection> local_catalog(catalog);
     Ordered_list<Record *, Less_than_ptr<Record *>> local_library_ordered_by_title(library_ordered_by_title);
     Ordered_list<Record *, Compare_Record_ID> local_library_ordered_by_id(library_ordered_by_id);

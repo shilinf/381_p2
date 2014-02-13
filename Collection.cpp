@@ -5,31 +5,21 @@
 
 using std::cout; using std::endl;
 
-void discard_file_input_remainder(std::ifstream& is);
-
 Collection::Collection(std::ifstream& is, const Ordered_list<Record*, Less_than_ptr<Record*>>& library)
 {
     int num_records;
     if (!(is >> name >> num_records))
         throw Error("Invalid data found in file!");
-    discard_file_input_remainder(is);
     for (int i = 0; i < num_records; ++i) {
+        is.get();
         String title;
         getline(is, title);
-        discard_file_input_remainder(is);
         Record probe(title);
         auto find_Record_item_iterator = library.find(&probe);
         if (find_Record_item_iterator == library.end())
             throw Error("Invalid data found in file!");
         add_member(*find_Record_item_iterator);
     }
-}
-
-// discard input remaining on the current line
-void discard_file_input_remainder(std::ifstream& is)
-{
-    while (is.get() != '\n')
-        ;
 }
 
 void Collection::add_member(Record* record_ptr)

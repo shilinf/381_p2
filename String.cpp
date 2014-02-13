@@ -61,8 +61,7 @@ String::~String() noexcept
         cout << "Dtor: \""  << str << "\"" << endl;
     --number;
     total_allocation -= str_allocation;
-    if (!str)
-        delete[] str;
+    delete_helper();
 }
 
 String& String::operator= (const String& rhs)
@@ -126,7 +125,7 @@ void String::remove(int i, int len)
 {
     if (i >= 0 && len >= 0 && i <= str_length && (i + len) <= str_length) {
         str_length -= len;
-        for (int index = i; index < str_length; index++)
+        for (int index = i; index < str_length; ++index)
             str[index] = str[index + len];
         str[str_length] = '\0';
     }
@@ -136,74 +135,21 @@ void String::remove(int i, int len)
 
 void String::insert_before(int i, const String& src)
 {
-    if (i <0 || i>str_length)
-        throw String_exception("Insertion point out of range");
-    if (str_allocation >= str_length + src.size() + 1) {
-        for (int index = str_length; index > i; --index)
-            str[index + src.size()] = str[index];
-        for (int index = 0; index < src.size(); ++index)
-            str[index + i] = src[index];
-        str_length += src.size();
-    }
-    else {
-        int pre_allocation = str_allocation;
-        str_allocation = 2 * (str_length + src.size() + 1);
-        total_allocation += str_allocation - pre_allocation;
-        char *new_str = new char[str_allocation];
-        for (int index = 0; index < i; ++index)
-            new_str[index] = str[index];
-        for (int index = str_length; index >= i; --index)
-            new_str[index + src.size()] = str[index];
-        for (int index = 0; index < src.size(); ++index)
-            new_str[index + i] = src[index];
-        if (!str)
-            delete[] str;
-        str_length += src.size();
-        str = new_str;
-    }
+    insert_before_helper(i, src.c_str());
 }
 
 String& String::operator += (char rhs)
 {
-    if (str_allocation >= str_length + 1 + 1) {
-        str[str_length] = rhs;
-        str_length += 1;
-        str[str_length] = '\0';
-    }
-    else {
-        int pre_allocation = str_allocation;
-        str_allocation = 2 * (str_length + 1 + 1);
-        total_allocation += str_allocation - pre_allocation;
-        char *new_str = new char[str_allocation];
-        strcpy(new_str, str);
-        new_str[str_length] = rhs;
-        str_length += 1;
-        new_str[str_length] = '\0';
-        if (!str)
-            delete[] str;
-        str = new_str;
-    }
+    char cstr[2];
+    cstr[0] = rhs;
+    cstr[1] = '\0';
+    insert_before_helper(str_length, cstr);
     return *this;
 }
 
 String& String::operator += (const char* rhs)
 {
-    if (str_allocation >= str_length + strlen(rhs) + 1) {
-        strcpy(str+str_length, rhs);
-        str_length += strlen(rhs);
-    }
-    else {
-        int pre_allocation = str_allocation;
-        str_allocation = 2 * (str_length + strlen(rhs) + 1);
-        total_allocation += str_allocation - pre_allocation;
-        char *new_str = new char[str_allocation];
-        strcpy(new_str, str);
-        strcpy(new_str+str_length, rhs);
-        str_length += strlen(rhs);
-        if (!str)
-            delete[] str;
-        str = new_str;
-    }
+    insert_before_helper(str_length, rhs);
     return *this;
 }
 
@@ -213,8 +159,45 @@ String& String::operator += (const String& rhs)
     return *this;
 }
 
-
-
+void String::insert_before_helper(int i, const char *cstr)
+{
+    if (i < 0 || i > str_length)
+        throw String_exception("Insertion point out of range");
+    int cstr_size = strlen(cstr);
+    if (str_allocation >= str_length + cstr_size + 1)
+        copy_helper(i, str, cstr);
+    else {
+        int pre_allocation = str_allocation;
+        str_allocation = 2 * (str_length + cstr_size + 1);
+        total_allocation += str_allocation - pre_allocation;
+        char *new_str = new char[str_allocation];
+        for (int index = 0; index < i; ++index)
+            new_str[index] = str[index];
+        copy_helper(i, new_str, cstr);
+        delete_helper();
+        str = new_str;
+    }
+    str_length += cstr_size;
+}
+    
+void String::copy_helper(int i, char* str_desti, const char* src_insert)
+{
+    int cstr_size = strlen(src_insert);
+    // copy characters after i to their destination from end to i,
+    // to make sure no data is overwritten before copying
+    // if str_desti is the same as str. copy the null character at first
+    for (int index = str_length; index > i; --index)
+        str_desti[index + cstr_size] = str[index];
+    // copy characters in cstr to its destination
+    for (int index = 0; index < cstr_size; ++index)
+        str_desti[index + i] = src_insert[index];
+}
+ 
+void String::delete_helper()
+{
+    if (!str)
+        delete[] str;
+}
 
 void String::swap(String& other) noexcept
 {
@@ -237,7 +220,6 @@ bool operator< (const String& lhs, const String& rhs)
 {
     return (strcmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
 }
-
 
 bool operator> (const String& lhs, const String& rhs)
 {
@@ -278,33 +260,9 @@ std::istream& operator>> (std::istream& is, String& str)
 
 std::istream& getline(std::istream& is, String& str)
 {
-    char input;
-    while ((input = is.get()) != '\n') { // check it
-        if (is)
-            str += input;
-        else
-            return is;
+    str.clear();
+    while (is.peek() != EOF && is.peek() != '\n') {
+        str += is.get();
     }
-    if (is) // if stream is still good, put back the new_line character
-        is.putback(input);
     return is;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
