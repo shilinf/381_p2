@@ -4,10 +4,9 @@
 #include "Utility.h"
 #include <iostream>
 #include <fstream>
-#include <cstring>
 
-using std::cin;
-
+using std::cin; using std::cout; using std::endl;
+using std::ifstream; using std::ofstream;
 
 struct Compare_Record_ID {
     bool operator() (const Record* p1, const Record* p2) const {return p1->get_ID() < p2->get_ID();}
@@ -39,12 +38,13 @@ void save_all_data(void);
 void restore_all_data(void);
 void quit(void);
 
-/* compare functions for OC_comp_fp_t */
+/* compare functions for OC_comp_fp_t
 int compare_Record_id(const void* data_ptr1, const void* data_ptr2);
 int compare_Collection_name(const void* data_ptr1, const void* data_ptr2);
 int compare_id_with_Record(const void* arg_ptr, const void* data_ptr);
 int compare_name_with_Collection(const void* arg_ptr, const void* data_ptr);
-
+*/
+ 
 /* implementation for OC_apply_if_arg_fp_t */
 bool check_record_in_Collection (Collection collection, Record *arg_ptr);
 
@@ -54,7 +54,7 @@ bool check_Collection_empty (Collection collection);
 /* implementation for OC_apply_fp_t*/
 void print_Collection (Collection &collection_data, std::ostream& os);
 void free_Record(Record *record_ptr);
-void OC_destory_Collection(void *data_ptr);
+//void OC_destory_Collection(void *data_ptr);
 
 /* implementation for OC_apply_arg_fp_t*/
 void save_Collection_item(Collection& collection, std::ostream& os);
@@ -63,20 +63,20 @@ void save_Record_item(Record *record_ptr, std::ostream& os);
 /* helper functions */
 void handle_invalid_command_error(void);
 void read_check_title(String &title);
-FILE *open_file(const char *mode);
-void read_collection_name(char *collection_name);
-Ordered_list<Collection>::Iterator find_collection_iterator(void);
-void handle_restore_all_data_invalid(FILE *fp);
+//FILE *open_file(const char *mode);
+//void read_collection_name(char *collection_name);
+void find_collection_iterator(Ordered_list<Collection>::Iterator &find_item_iterator);
+//void handle_restore_all_data_invalid(FILE *fp);
 void discard_input_remainder(void);
 void read_and_check_integer(int *id_input);
-int check_Record_ptr_find_by_id(void *find_ptr);
+//int check_Record_ptr_find_by_id(void *find_ptr);
 int trim_title(String &title);
 
 int main ()
 {
     while (1) {
         char action, object;
-        printf("\nEnter command: ");
+        cout << endl << "Enter command: ";
         cin >> action;
         cin >> object;
         try {
@@ -159,15 +159,15 @@ int main ()
                     switch (object) {
                         case 'L':
                             clear_Library();
-                                printf("All records deleted\n");
+                            cout <<"All records deleted" <<endl;
                             break;
                         case 'C':
                             clear_Catalog();
-                            printf("All collections deleted\n");
+                            cout << "All collections deleted" <<endl;
                             break;
                         case 'A':
                             clear_all_data();
-                            printf("All data deleted\n");
+                            cout << "All data deleted" <<endl;
                             break;
                         default:
                             handle_invalid_command_error();
@@ -213,7 +213,7 @@ int main ()
             discard_input_remainder();
         } catch (String_exception& exception) {
             cout << exception.msg <<endl;
-        } catch (exception e) {
+        } catch (...) {
             cout << "Unknown exception caught" <<endl;
         }
     }
@@ -224,7 +224,7 @@ int main ()
 /* Print error message for invalid comamnd and read to new line */
 void handle_invalid_command_error(void)
 {
-    printf("%s", "Unrecognized command!\n");
+    cout << "Unrecognized command!" << endl;
     discard_input_remainder();
 }
 
@@ -238,9 +238,9 @@ void find_Record_match_title(void)
     auto find_item_iterator = library_ordered_by_title.find(&find_temp);
 
     if (find_item_iterator != library_ordered_by_title.end())
-        cout << **find_item_iterator;
+        cout << **find_item_iterator << endl;
     else
-        throw Error("No record with that title!\n");
+        throw Error("No record with that title!");
 }
 
 
@@ -253,9 +253,9 @@ void print_Record_match_id(void)
     auto find_item_iterator = library_ordered_by_id.find(&find_temp);
 
     if (find_item_iterator != library_ordered_by_id.end())
-        cout << **find_item_iterator;
+        cout << **find_item_iterator << endl;
     else
-        throw Error("No record with that ID!\n");
+        throw Error("No record with that ID!");
 }
 
 
@@ -263,7 +263,8 @@ void print_Record_match_id(void)
  specified name */
 void print_Collection_match_name(void)
 {
-    auto find_item_iterator = find_collection_iterator();
+    Ordered_list<Collection>::Iterator find_item_iterator;
+    find_collection_iterator(find_item_iterator);
     cout << *find_item_iterator;
 }
 
@@ -277,6 +278,9 @@ void print_Records(void)
     else {
         cout << "Library contains " << library_ordered_by_title.size() << " records:" <<endl;
         apply_arg_ref(library_ordered_by_title.begin(), library_ordered_by_title.end(), print_Record, cout);
+        
+        //cout << "id Library" <<endl;
+        //apply_arg_ref(library_ordered_by_id.begin(), library_ordered_by_id.end(), print_Record, cout);
     }
 }
 
@@ -364,7 +368,29 @@ void add_Collection(void)
 /* add a record to a specified collection */
 void add_Record_to_Collection(void)
 {
-    auto find_Collection_item_iterator = find_collection_iterator();
+    
+    /*String collection_name;
+    cin >> collection_name;
+    Collection find_temp(collection_name);
+    
+    cout << "output collection name: "<< collection_name<<endl;
+    
+    auto find_Collection_item_iterator = catalog.find(find_temp);
+    if (find_Collection_item_iterator == catalog.end())
+        throw Error("No collection with that name!\n");
+    
+    cout << "why?" <<find_Collection_item_iterator->get_name()<<endl;
+
+    cout << "here no problem1"  <<endl;*/
+    
+    Ordered_list<Collection>::Iterator find_Collection_item_iterator;
+    find_collection_iterator(find_Collection_item_iterator);
+    //cout << find_Collection_item_iterator->get_name()<<endl;
+    
+    //cout << "here no problem2"  <<endl;
+
+    
+    
     int id_input;
     read_and_check_integer(&id_input);
     
@@ -374,8 +400,18 @@ void add_Record_to_Collection(void)
     
     if (find_Record_item_iterator == library_ordered_by_id.end())
         throw Error("No record with that ID!");
+    
+    //cout << "here no problem1"  <<endl;
+    
+    //cout << &find_Collection_item_iterator<<endl;
+    
     find_Collection_item_iterator->add_member(*find_Record_item_iterator);
+    
+    //cout << "here no problem2" <<endl;
+    
     cout << "Member " << id_input << " " << (*find_Record_item_iterator)->get_title() <<" added" << endl;
+    
+    //cout <<find_Collection_item_iterator->get_name() << "Here output the collection name" <<endl;
 }
 
 /* modify the rating of the specified record with the matching ID number */
@@ -390,6 +426,7 @@ void modify_Record_rating(void)
         throw Error("No record with that ID!"); // also considering simplify this part.
     
     read_and_check_integer(&rating_input);
+    (*find_Record_item_iterator)->set_rating(rating_input);
     cout << "Rating for record " << id_input << " changed to " << rating_input <<endl;
 }
 
@@ -409,15 +446,20 @@ void delete_Record_from_Library(void)
     //cout << "lala" <<endl;
     
     int record_ID = (*find_Record_item_iterator)->get_ID();
+    Record *delete_pointer = * find_Record_item_iterator;
     library_ordered_by_title.erase(find_Record_item_iterator);
     
-    //cout << "11" <<endl;
+    //cout << record_ID <<endl;
     
     Record temp_id(record_ID);
     
     //cout << "dada" <<endl;
     library_ordered_by_id.erase(library_ordered_by_id.find(&temp_id));
-    delete (*find_Record_item_iterator);
+    
+    //cout << "no problem" <<endl;
+    
+    delete delete_pointer;
+    
     cout << "Record " << record_ID << " " << title << " deleted" <<endl;
 }
 
@@ -428,9 +470,11 @@ void delete_Record_from_Library(void)
 /* delete the specified collection from the Catalog */
 void delete_Collection_from_Catalog(void)
 {
-    auto find_Collection_item_iterator = find_collection_iterator();
+    Ordered_list<Collection>::Iterator find_Collection_item_iterator;
+    find_collection_iterator(find_Collection_item_iterator);
+    String collection_name = find_Collection_item_iterator->get_name();
     catalog.erase(find_Collection_item_iterator);
-    cout << "Collection " << find_Collection_item_iterator->get_name() << " deleted" << endl;
+    cout << "Collection " << collection_name << " deleted" << endl;
 }
 
 
@@ -440,7 +484,8 @@ void delete_Record_from_Collection(void)
 {
     
     // very similar to add record to collection, find way to simplify it
-    auto find_Collection_item_iterator = find_collection_iterator();
+    Ordered_list<Collection>::Iterator find_Collection_item_iterator;
+    find_collection_iterator(find_Collection_item_iterator);
     int id_input;
     read_and_check_integer(&id_input);
     
@@ -530,15 +575,27 @@ void restore_all_data(void)
         int num_record;
         if (!(input_file >> num_record))
             throw Error("Invalid data found in file!");
+        
+        //cout << "begin read:" <<num_record <<endl;
+        
         for (int i=0; i < num_record; i++) {
+            
+            //cout << i <<endl;
             Record *new_record = new Record(input_file);
             library_ordered_by_title.insert(new_record);
             library_ordered_by_id.insert(new_record);
         }
+        
+        //cout << "library read successfully" <<endl;
+        
         int num_collection;
         if (!(input_file >> num_collection))
             throw Error("Invalid data found in file!");
+        
+        //cout <<"number of collection: "<<num_collection <<endl;
         for (int i = 0; i < num_collection; i++) {
+            //cout << i<<endl;
+            
             Collection new_collection(input_file, library_ordered_by_title);
             catalog.insert(new_collection);
         }
@@ -611,15 +668,19 @@ bool check_record_in_Collection (Collection collection, Record *arg_ptr)
 
 /* Find the collection pointer from catalog with the specified collection name.
  Print error message and read to new line if the collection doesn't exist*/
-Ordered_list<Collection>::Iterator find_collection_iterator(void)
+void find_collection_iterator(Ordered_list<Collection>::Iterator &find_item_iterator)
 {
     String collection_name;
     cin >> collection_name;
     Collection find_temp(collection_name);
-    auto find_item_iterator = catalog.find(find_temp);
+    
+    //cout << "output collection name: "<< collection_name<<endl;
+    
+    find_item_iterator = catalog.find(find_temp);
     if (find_item_iterator == catalog.end())
-        throw Error("No collection with that name!\n");
-    return find_item_iterator;
+        throw Error("No collection with that name!");
+    
+    //cout << "why?" <<find_item_iterator->get_name()<<endl;
 }
 
 
@@ -656,7 +717,7 @@ int check_Record_ptr_find_by_id(void *find_ptr)
 void read_and_check_integer(int *id_input)
 {
     if (!(cin >> *id_input))
-        throw Error("Could not read an integer value!\n");
+        throw Error("Could not read an integer value!");
 }
 
 
@@ -670,7 +731,7 @@ void read_check_title(String &title)
 {
     getline(cin, title);
     if (!trim_title(title))
-        throw Error("Could not read a title!\n");
+        throw Error("Could not read a title!");
 }
 
 
@@ -692,7 +753,7 @@ int trim_title(String &title)
     /* If the last character before '\0' is space and there exists non-sapce
      character in the string, put the '\0' one position before to
      occupy the trailing whitespace. */
-    if (isspace(title[title.size()-1]) && valid)
+    if (valid && isspace(title[title.size()-1]))
         title.remove(title.size()-1, 1);
     return valid;
 }
@@ -704,9 +765,9 @@ int trim_title(String &title)
 /* Read to new line */
 void discard_input_remainder(void)
 {
-    while (cin.get() != '\n') {
+    cin.clear();
+    while (cin.get() != '\n')
         ;
-    }
 }
 
 

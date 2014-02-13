@@ -96,8 +96,8 @@ Remove this comment too. */
 #include <cassert>
 #include <new>
 
-#include <iostream>// for debug
-using namespace std; //for debug
+//#include <iostream>// for debug
+//using namespace std; //for debug
 
 
 
@@ -310,10 +310,12 @@ private:
 	OF ordering_f;
 	/* *** other private member variables and functions are your choice. */
     
+    
     Node *first;
     Node *last;
     int num_node;
     void push_back(const T& new_datum);
+    //void swap_iterator(Iterator &first, Iterator &second);
 };
 
 // These function templates are given two iterators, usually .begin() and .end(),
@@ -503,14 +505,23 @@ void Ordered_list<T, OF>::clear() noexcept
 // no allocation or deallocation of list Nodes is done.
 // Thus the no-throw guarantee can be provided.
 template<typename T, typename OF>
-void Ordered_list<T, OF>::swap(Ordered_list & other) noexcept    // ?????????????????? could we use the std::swap??
+void Ordered_list<T, OF>::swap(Ordered_list & other) noexcept
 {
+    
     std::swap(num_node, other.num_node);
     std::swap(first, other.first);
     std::swap(last, other.last);
     std::swap(ordering_f, other.ordering_f);
+    
 }
 
+/*template<typename T, typename OF>
+void Ordered_list<T, OF>::swap_iterator(Iterator &first, Iterator &second)
+{
+    Iterator temp = first;
+    first = second;
+    second = temp;
+}*/
 
 template<typename T, typename OF>
 void Ordered_list<T, OF>::erase(Iterator it) noexcept

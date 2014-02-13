@@ -49,6 +49,10 @@ String::String(String&& original) noexcept : str(&a_null_byte), str_length(0), s
 {
     if (messages_wanted)
         cout << "Move ctor: \"" << original << "\"" << endl;
+    
+    
+    
+    //cout << "what's wrong here?" <<endl;
     swap(original);
     ++number;
 }
@@ -59,7 +63,7 @@ String::~String() noexcept
         cout << "Dtor: \""  << str << "\"" << endl;
     --number;
     total_allocation -= str_allocation;
-    if (str_allocation)
+    if (!str)
         delete[] str;
 }
 
@@ -141,33 +145,52 @@ void String::insert_before(int i, const String& src)
     if (i <0 || i>str_length)
         throw String_exception("Insertion point out of range");
     
+    
     if (str_allocation >= str_length + src.size() + 1) {
-        for (int index = str_length; index >= i; --index)
+        for (int index = str_length; index > i; --index)
             str[index + src.size()] = str[index];
-        for (int index = 0; index < src.size(); ++index)
+        
+        for (int index = 0; index < src.size(); ++index) {
             str[index + i] = src[index];
+            //cout << src[index] <<endl;
+        }
         str_length += src.size();
     }
     else {
+        //cout << "source size:" << src.size() << "  initial size: "<< str_length << "  i value:  " << i <<endl;
         int pre_allocation = str_allocation;
         str_allocation = 2 * (str_length + src.size() + 1);
         total_allocation += str_allocation - pre_allocation;
         char *new_str = new char[str_allocation];
-        for (int index = 0; index < i; ++index)
+        for (int index = 0; index < i; ++index) {
             new_str[index] = str[index];
-        for (int index = str_length; index >= i; --index)
+            //cout << str[index] << "  copy leading values" <<endl;
+        }
+        for (int index = str_length; index >= i; --index) {
             new_str[index + src.size()] = str[index];
-        for (int index = 0; index < src.size(); ++index)
+            //cout << str[index] <<"   " << index << " " <<endl;
+            //cout << new_str[index + src.size()] <<"   " << index << " " <<endl;
+        }
+        for (int index = 0; index < src.size(); ++index) {
             new_str[index + i] = src[index];
-        if (pre_allocation)
+            //cout << new_str[index + i] <<endl;
+        }
+        if (!str)
             delete[] str;
         str_length += src.size();
         str = new_str;
+        for (int i =0 ;i < str_length;i++) {
+            //cout << new_str[i] <<endl;
+        }
+        
+        //cout << new_str << "oijoisgjoijoisjoifjoisjoifjoisjoijfoijois" <<endl;
     }
 }
 
 String& String::operator += (char rhs)
 {
+    //cout << "+=" <<endl;
+    
     if (str_allocation >= str_length + 1 + 1) {
         str[str_length] = rhs;
         str_length += 1;
@@ -182,7 +205,7 @@ String& String::operator += (char rhs)
         new_str[str_length] = rhs;
         str_length += 1;
         new_str[str_length] = '\0';
-        if (pre_allocation)
+        if (!str)
             delete[] str;
         str = new_str;
     }
@@ -192,7 +215,9 @@ String& String::operator += (char rhs)
 String& String::operator += (const char* rhs)
 {
     if (str_allocation >= str_length + strlen(rhs) + 1) {
-        strcpy(str+str_length-1, rhs);
+        //cout << "go here" <<str_length<<endl;
+        strcpy(str+str_length, rhs);
+        //cout << str <<"???"<<endl;
         str_length += strlen(rhs);
     }
     else {
@@ -201,9 +226,9 @@ String& String::operator += (const char* rhs)
         total_allocation += str_allocation - pre_allocation;
         char *new_str = new char[str_allocation];
         strcpy(new_str, str);
-        strcpy(new_str+str_length-1, rhs);
+        strcpy(new_str+str_length, rhs);
         str_length += strlen(rhs);
-        if (pre_allocation)
+        if (!str)
             delete[] str;
         str = new_str;
     }
@@ -212,7 +237,9 @@ String& String::operator += (const char* rhs)
 
 String& String::operator += (const String& rhs)
 {
+    //cout << "+=" <<endl;
     insert_before(str_length, rhs);
+    //cout << "end of +=" <<endl;
     return *this;
 }
 
@@ -235,13 +262,21 @@ String::String(const String& original, int i, int len) : str_length(len)
 
 void String::swap(String& other) noexcept
 {
-    std::swap(str, other.str);
-    std::swap(str_length, other.str_length);
-    std::swap(str_allocation, other.str_allocation);
+    char *temp_str = other.str;
+    other.str = str;
+    str = temp_str;
+    
+    int temp_length = other.str_length;
+    other.str_length = str_length;
+    str_length = temp_length;
+    
+    int temp_allocation = other.str_allocation;
+    other.str_allocation = str_allocation;
+    str_allocation = temp_allocation;
 }
 
 
-
+// use ???
 bool operator== (const String& lhs, const String& rhs)
 {
     if (!strcmp(lhs.c_str(), rhs.c_str()))
@@ -278,7 +313,10 @@ bool operator> (const String& lhs, const String& rhs)
 String operator+ (const String& lhs, const String& rhs)
 {
     String concatenation(lhs);
+    //cout << concatenation <<"111111???????" << endl;
     concatenation += rhs;
+    //cout << concatenation <<"22222???????" << endl;
+    //cout << concatenation << "   finished + operation" <<endl;
     return concatenation;
 }
 
@@ -310,7 +348,7 @@ std::istream& operator>> (std::istream& is, String& str)
 std::istream& getline(std::istream& is, String& str)
 {
     char input;
-    while ((input = is.get()) != '\n') {
+    while ((input = is.get()) != '\n' && is) { // check it
         if (is)
             str += input;
         else

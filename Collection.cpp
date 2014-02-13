@@ -1,6 +1,9 @@
 #include "Collection.h"
 #include "Utility.h"
+#include "Record.h"
 #include <fstream>
+
+using std::cout; using std::endl;
 
 void discard_file_input_remainder(std::ifstream& is);
 
@@ -11,16 +14,26 @@ Collection::Collection(std::ifstream& is, const Ordered_list<Record*, Less_than_
     int num_records;
     if (!(is >> name >> num_records))
         throw Error("Invalid data found in file!");
+    //cout << name << num_records <<"   collection info read" <<endl;
+    
     discard_file_input_remainder(is);
     for (int i = 0; i < num_records; ++i) {
+        
+        //cout << i<<endl;
+        
         String title;
-        char new_line;
         getline(is, title);
-        is >> new_line;
+        discard_file_input_remainder(is);
+        
+        //cout << title <<": here is title" <<endl;
+        
         Record temp(title);
         auto find_Record_item_iterator = library.find(&temp);
-        if (find_Record_item_iterator == library.end())
+        if (find_Record_item_iterator == library.end()) {
+            //cout << "find fail???"<<endl;
+    
             throw Error("Invalid data found in file!");
+        }
         add_member(*find_Record_item_iterator);
     }
 }
@@ -66,6 +79,7 @@ std::ostream& operator<< (std::ostream& os, const Collection& collection)
     if (collection.empty())
         os << " None" << endl;
     else {
+        cout << endl;
         apply_arg_ref(collection.members.begin(), collection.members.end(), print_Record, os);
     }
     return os;
