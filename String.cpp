@@ -239,17 +239,29 @@ std::ostream& operator<< (std::ostream& os, const String& str)
 std::istream& operator>> (std::istream& is, String& str)
 {
     str.clear();
-    while (isspace(is.peek()))
+    while (isspace(is.peek())) {
+        if (is)
             is.get();
-    while (!isspace(is.peek()))
+        else
+            return is;
+    }
+    while (!isspace(is.peek())) {
+        if (is)
             str += is.get();
+        else
+            return is;
+    }
     return is;
 }
 
 std::istream& getline(std::istream& is, String& str)
 {
     str.clear();
-    while (is.peek() != EOF && is.peek() != '\n')
+    while (is.peek() != EOF && is.peek() != '\n') {
+        if (is)
             str += is.get();
+        else
+            return is;
+    }
     return is;
 }
