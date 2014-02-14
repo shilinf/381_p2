@@ -1,6 +1,7 @@
 #include "String.h"
 #include <cstring>
 #include <utility>
+#include <iostream>
 #include <new>
 
 using std::string;
@@ -47,7 +48,8 @@ void String::constructor_helper(const char* cstr_)
     total_allocation += str_allocation;
 }
 
-String::String(String&& original) noexcept : str(&a_null_byte), str_length(0), str_allocation(0)
+String::String(String&& original) noexcept :
+str(&a_null_byte), str_length(0), str_allocation(0)
 {
     if (messages_wanted)
         cout << "Move ctor: \"" << original << "\"" << endl;
@@ -61,7 +63,8 @@ String::~String() noexcept
         cout << "Dtor: \""  << str << "\"" << endl;
     --number;
     total_allocation -= str_allocation;
-    delete_helper();
+    if (!str)
+        delete[] str;
 }
 
 String& String::operator= (const String& rhs)
@@ -114,7 +117,6 @@ String String::substring(int i, int len) const
         throw String_exception("Substring bounds invalid");
 }
 
-
 void String::clear()
 {
     String empty_string;
@@ -125,7 +127,7 @@ void String::remove(int i, int len)
 {
     if (i >= 0 && len >= 0 && i <= str_length && (i + len) <= str_length) {
         str_length -= len;
-        for (int index = i; index < str_length; ++index)
+        for (int index = i; index < str_length; index++)
             str[index] = str[index + len];
         str[str_length] = '\0';
     }
@@ -171,10 +173,11 @@ void String::insert_before_helper(int i, const char *cstr)
         str_allocation = 2 * (str_length + cstr_size + 1);
         total_allocation += str_allocation - pre_allocation;
         char *new_str = new char[str_allocation];
-        for (int index = 0; index < i; ++index)
+        for (int index = 0; index < i; index++)
             new_str[index] = str[index];
         copy_helper(i, new_str, cstr);
-        delete_helper();
+        if (!str)
+            delete[] str;
         str = new_str;
     }
     str_length += cstr_size;
@@ -184,19 +187,13 @@ void String::copy_helper(int i, char* str_desti, const char* src_insert)
 {
     int cstr_size = int(strlen(src_insert));
     // Copy characters after i to their destination from end to i,
-    // to make sure no data is overwritten before copying when str_desti is the same as str.
-    // The first copy character is null.
+    // to make sure no data is overwritten before copying when str_desti is
+    // the same as str. The first copy character is null.
     for (int index = str_length; index >= i; --index)
         str_desti[index + cstr_size] = str[index];
     // copy characters in cstr to its destination
-    for (int index = 0; index < cstr_size; ++index)
+    for (int index = 0; index < cstr_size; index++)
         str_desti[index + i] = src_insert[index];
-}
- 
-void String::delete_helper()
-{
-    if (!str)
-        delete[] str;
 }
 
 void String::swap(String& other) noexcept
@@ -208,22 +205,22 @@ void String::swap(String& other) noexcept
 
 bool operator== (const String& lhs, const String& rhs)
 {
-    return strcmp(lhs.c_str(), rhs.c_str()) ? false : true;
+    return !strcmp(lhs.c_str(), rhs.c_str());
 }
 
 bool operator!= (const String& lhs, const String& rhs)
 {
-    return strcmp(lhs.c_str(), rhs.c_str()) ? true : false;
+    return strcmp(lhs.c_str(), rhs.c_str());
 }
 
 bool operator< (const String& lhs, const String& rhs)
 {
-    return (strcmp(lhs.c_str(), rhs.c_str()) < 0) ? true : false;
+    return (strcmp(lhs.c_str(), rhs.c_str()) < 0);
 }
 
 bool operator> (const String& lhs, const String& rhs)
 {
-    return (strcmp(lhs.c_str(), rhs.c_str()) > 0) ? true : false;
+    return (strcmp(lhs.c_str(), rhs.c_str()) > 0);
 }
 
 String operator+ (const String& lhs, const String& rhs)
@@ -242,29 +239,17 @@ std::ostream& operator<< (std::ostream& os, const String& str)
 std::istream& operator>> (std::istream& is, String& str)
 {
     str.clear();
-    while (isspace(is.peek())) {
-        if (is)
+    while (isspace(is.peek()))
             is.get();
-        else
-            return is;
-    }
-    while (!isspace(is.peek())) {
-        if (is)
+    while (!isspace(is.peek()))
             str += is.get();
-        else
-            return is;
-    }
     return is;
 }
 
 std::istream& getline(std::istream& is, String& str)
 {
     str.clear();
-    while (is.peek() != EOF && is.peek() != '\n') {
-        if (is)
+    while (is.peek() != EOF && is.peek() != '\n')
             str += is.get();
-        else
-            return is;
-    }
     return is;
 }

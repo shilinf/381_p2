@@ -1,6 +1,5 @@
 #ifndef RECORD_H
 #define RECORD_H
-
 /*
 A Record ontains a unique ID number, a rating, and a title and medium name as Strings.
 When created, a Record is assigned a unique ID number. The first Record created

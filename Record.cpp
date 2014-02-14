@@ -4,7 +4,6 @@
 #include <iostream>
 
 int Record::ID_counter = 0;
-
 int Record::ID_counter_backup = 0;
 
 Record::Record(const String& medium_, const String& title_) : ID(++ID_counter), rate(0), title(title_), medium(medium_) {}

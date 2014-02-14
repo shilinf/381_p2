@@ -335,10 +335,12 @@ bool apply_if_arg(IT first, IT last, F function, A arg)
 }
 
 template<typename T, typename OF>
-Ordered_list<T, OF>::Ordered_list() : first(nullptr), last(nullptr) , num_node(0){++g_Ordered_list_count;}
+Ordered_list<T, OF>::Ordered_list() : first(nullptr), last(nullptr) , num_node(0)
+{++g_Ordered_list_count;}
 
 template<typename T, typename OF>
-Ordered_list<T, OF>::Ordered_list(const Ordered_list& original) : ordering_f(original.ordering_f), first(nullptr), last(nullptr), num_node(0)
+Ordered_list<T, OF>::Ordered_list(const Ordered_list& original) :
+ordering_f(original.ordering_f), first(nullptr), last(nullptr), num_node(0)
 {
     Ordered_list<T, OF> local_list;
     local_list.ordering_f = original.ordering_f;
@@ -365,7 +367,8 @@ void Ordered_list<T, OF>::push_back(const T& new_datum)
 }
 
 template<typename T, typename OF>
-Ordered_list<T, OF>::Ordered_list(Ordered_list&& original) noexcept : first(nullptr), last(nullptr), num_node(0)
+Ordered_list<T, OF>::Ordered_list(Ordered_list&& original) noexcept :
+first(nullptr), last(nullptr), num_node(0)
 {
     swap(original);
     ++g_Ordered_list_count;
@@ -379,14 +382,12 @@ Ordered_list<T, OF>& Ordered_list<T, OF>::operator= (const Ordered_list& rhs)
     return *this;
 }
 
-
 template<typename T, typename OF>
 Ordered_list<T, OF>& Ordered_list<T, OF>::operator= (Ordered_list&& rhs) noexcept
 {
     swap(rhs);
     return *this;
 }
-
 
 template<typename T, typename OF>
 Ordered_list<T, OF>::~Ordered_list()
@@ -395,7 +396,6 @@ Ordered_list<T, OF>::~Ordered_list()
         delete it.node_ptr;
     --g_Ordered_list_count;
 }
-
 
 template<typename T, typename OF>
 void Ordered_list<T, OF>::clear() noexcept
@@ -406,7 +406,6 @@ void Ordered_list<T, OF>::clear() noexcept
     first = nullptr;
     last = nullptr;
 }
-
 
 template<typename T, typename OF>
 void Ordered_list<T, OF>::insert(const T& new_datum)
@@ -430,13 +429,13 @@ void Ordered_list<T, OF>::insert(const T& new_datum)
         Node *find_insert_position = first;
         while (ordering_f(find_insert_position->datum, new_datum))
             find_insert_position = find_insert_position->next;
-        Node *new_node = new Node(new_datum, find_insert_position->prev, find_insert_position);
+        Node *new_node = new Node(new_datum, find_insert_position->prev,
+                                  find_insert_position);
         find_insert_position->prev->next = new_node;
         find_insert_position->prev = new_node;
     }
     ++num_node;
 }
-
 
 template<typename T, typename OF>
 void Ordered_list<T, OF>::erase(Iterator it) noexcept

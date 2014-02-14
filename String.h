@@ -51,14 +51,12 @@ or assignment operator as part of their work.
 
 #include <iostream>
 
-
 // Simple exception class for reporting String errors
 struct String_exception {
 	String_exception(const char* msg_) : msg(msg_)
 		{}
 	const char* msg;
 };
-
 
 class String {
 public:
@@ -166,12 +164,11 @@ private:
 	static int total_allocation;	// counts total amount of memory allocated
 	static bool messages_wanted;	// whether to output constructor/destructor/operator= messages, initially false
     
+    /* make them private member functions because they modify private variables */
     String(const String& original, int i, int len); // constructor for substring
     void constructor_helper(const char* cstr_);
     void insert_before_helper(int i, const char *cstr);
     void copy_helper(int i, char* str_desti, const char* src_insert); // a copy function used in insert_before_helper
-    void delete_helper();
-    
     
     char *str;
     int str_length;
@@ -211,6 +208,5 @@ which is left in the stream (this differs from the fgets and std::getline functi
 str's allocation is expanded as needed, and it retains the final allocation.
 If the input stream fails, str contains whatever characters were read. */
 std::istream& getline(std::istream& is, String& str);
-
 
 #endif

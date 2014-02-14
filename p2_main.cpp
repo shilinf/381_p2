@@ -2,16 +2,21 @@
 #include "Record.h"
 #include "Collection.h"
 #include "Utility.h"
+#include "p2_globals.h"
+#include "String.h"
 #include <iostream>
 #include <fstream>
+#include <cctype>
 #include <new>
 
 using std::cin; using std::cout; using std::endl;
 using std::ifstream; using std::ofstream;
+using std::isspace;
 
 // compare two records by ID
 struct Compare_Record_ID {
-    bool operator() (const Record* p1, const Record* p2) const {return p1->get_ID() < p2->get_ID();}
+    bool operator() (const Record* p1, const Record* p2) const
+        {return p1->get_ID() < p2->get_ID();}
 };
 
 using Ordered_by_title_lib_t = Ordered_list<Record *, Less_than_ptr<Record *>>;
@@ -24,19 +29,32 @@ void print_Collection_match_name(const Ordered_list<Collection> &catalog);
 void print_Records(const Ordered_by_title_lib_t &library);
 void print_Catalog(const Ordered_list<Collection> &catalog);
 void print_memory_allocation(int library_size, int catalog_size);
-void add_Record(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id);
+void add_Record(Ordered_by_title_lib_t &library_title,
+                Ordered_by_id_lib_t &library_id);
 void add_Collection(Ordered_list<Collection> &catalog);
-void add_Record_to_Collection(Ordered_list<Collection> &catalog, const Ordered_by_id_lib_t &library);
+void add_Record_to_Collection(Ordered_list<Collection> &catalog,
+                              const Ordered_by_id_lib_t &library);
 void modify_Record_rating(const Ordered_by_id_lib_t &library);
-void delete_Record_from_Library(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id, const Ordered_list<Collection> &catalog);
+void delete_Record_from_Library(Ordered_by_title_lib_t &library_title,
+                                Ordered_by_id_lib_t &library_id,
+                                const Ordered_list<Collection> &catalog);
 void delete_Collection_from_Catalog(Ordered_list<Collection> &catalog);
-void delete_Record_from_Collection(Ordered_list<Collection> &catalog, const Ordered_by_id_lib_t &library);
-void clear_Library(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id, const Ordered_list<Collection> &catalog);
+void delete_Record_from_Collection(Ordered_list<Collection> &catalog,
+                                   const Ordered_by_id_lib_t &library);
+void clear_Library(Ordered_by_title_lib_t &library_title,
+                   Ordered_by_id_lib_t &library_id,
+                   const Ordered_list<Collection> &catalog);
 void clear_Catalog(Ordered_list<Collection> &catalog);
-void clear_all_data(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id, Ordered_list<Collection> &catalog);
-void save_all_data(const Ordered_by_title_lib_t &library_title, const Ordered_list<Collection> &catalog);
-void restore_all_data(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id, Ordered_list<Collection> &catalog);
-void quit(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id, Ordered_list<Collection> &catalog);
+void clear_all_data(Ordered_by_title_lib_t &library_title,
+                    Ordered_by_id_lib_t &library_id,
+                    Ordered_list<Collection> &catalog);
+void save_all_data(const Ordered_by_title_lib_t &library_title,
+                   const Ordered_list<Collection> &catalog);
+void restore_all_data(Ordered_by_title_lib_t &library_title,
+                      Ordered_by_id_lib_t &library_id,
+                      Ordered_list<Collection> &catalog);
+void quit(Ordered_by_title_lib_t &library_title,
+          Ordered_by_id_lib_t &library_id, Ordered_list<Collection> &catalog);
 
 // function parameter for OC_apply_if_arg
 bool check_record_in_Collection (Collection collection, Record *arg_ptr);
@@ -47,11 +65,14 @@ bool check_Collection_empty (Collection collection);
 // function parameter for apply
 void free_Record(Record *record_ptr);
 
-
 // helper functions
 void handle_invalid_command(void);
 void discard_input_remainder(void);
-void find_collection_iterator(Ordered_list<Collection>::Iterator &catalog_iterator, const Ordered_list<Collection> &catalog);
+void find_collection_iterator(Ordered_list<Collection>::Iterator
+                              &catalog_iterator,
+                              const Ordered_list<Collection> &catalog);
+void probe_Record_by_id(int id, Ordered_by_id_lib_t::Iterator &library_iterator,
+                        const Ordered_by_id_lib_t &library);
 void read_and_check_integer(int &id_input);
 void read_check_title(String &title);
 int trim_title(String &title);
@@ -93,7 +114,8 @@ int main ()
                             print_Catalog(catalog);
                             break;
                         case 'a':
-                            print_memory_allocation(library_ordered_by_title.size(), catalog.size());
+                            print_memory_allocation(library_ordered_by_title.size(),
+                                                    catalog.size());
                             break;
                         default:
                             handle_invalid_command();
@@ -103,13 +125,15 @@ int main ()
                 case 'a':
                     switch (object) {
                         case 'r':
-                            add_Record(library_ordered_by_title, library_ordered_by_id);
+                            add_Record(library_ordered_by_title,
+                                       library_ordered_by_id);
                             break;
                         case 'c':
                             add_Collection(catalog);
                             break;
                         case 'm':
-                            add_Record_to_Collection(catalog, library_ordered_by_id);
+                            add_Record_to_Collection(catalog,
+                                                     library_ordered_by_id);
                             break;
                         default:
                             handle_invalid_command();
@@ -129,13 +153,15 @@ int main ()
                 case 'd':
                     switch (object) {
                         case 'r':
-                            delete_Record_from_Library(library_ordered_by_title, library_ordered_by_id, catalog);
+                            delete_Record_from_Library(library_ordered_by_title,
+                                                       library_ordered_by_id, catalog);
                             break;
                         case 'c':
                             delete_Collection_from_Catalog(catalog);
                             break;
                         case 'm':
-                            delete_Record_from_Collection(catalog, library_ordered_by_id);
+                            delete_Record_from_Collection(catalog,
+                                                          library_ordered_by_id);
                             break;
                         default:
                             handle_invalid_command();
@@ -145,7 +171,8 @@ int main ()
                 case 'c':
                     switch (object) {
                         case 'L':
-                            clear_Library(library_ordered_by_title, library_ordered_by_id, catalog);
+                            clear_Library(library_ordered_by_title,
+                                          library_ordered_by_id, catalog);
                             cout <<"All records deleted" <<endl;
                             break;
                         case 'C':
@@ -153,7 +180,8 @@ int main ()
                             cout << "All collections deleted" <<endl;
                             break;
                         case 'A':
-                            clear_all_data(library_ordered_by_title, library_ordered_by_id, catalog);
+                            clear_all_data(library_ordered_by_title,
+                                           library_ordered_by_id, catalog);
                             cout << "All data deleted" <<endl;
                             break;
                         default:
@@ -174,7 +202,8 @@ int main ()
                 case 'r':
                     switch (object) {
                         case 'A':
-                            restore_all_data(library_ordered_by_title, library_ordered_by_id, catalog);
+                            restore_all_data(library_ordered_by_title,
+                                             library_ordered_by_id, catalog);
                             break;
                         default:
                             handle_invalid_command();
@@ -184,7 +213,8 @@ int main ()
                 case 'q':
                     switch (object) {
                         case 'q':
-                            quit(library_ordered_by_title, library_ordered_by_id, catalog);
+                            quit(library_ordered_by_title,
+                                 library_ordered_by_id, catalog);
                             return 0;
                             break;
                         default:
@@ -208,14 +238,14 @@ int main ()
     return 0;
 }
 
-/* Print error message for invalid comamnd and read to new line */
+// Print error message for invalid comamnd and read to new line
 void handle_invalid_command(void)
 {
     cout << "Unrecognized command!" << endl;
     discard_input_remainder();
 }
 
-/* Read to new line */
+// Read to new line
 void discard_input_remainder(void)
 {
     cin.clear();
@@ -223,7 +253,7 @@ void discard_input_remainder(void)
         ;
 }
 
-/* find and print the specified record with the matching title */
+// find and print the specified record with the matching title
 void find_Record_match_title(const Ordered_by_title_lib_t &library)
 {
     String title;
@@ -236,8 +266,7 @@ void find_Record_match_title(const Ordered_by_title_lib_t &library)
         throw Error("No record with that title!");
 }
 
-
-/* print the specified record with the matching ID number */
+// print the specified record with the matching ID number
 void print_Record_match_id(const Ordered_by_id_lib_t &library)
 {
     int id_input;
@@ -250,9 +279,8 @@ void print_Record_match_id(const Ordered_by_id_lib_t &library)
         throw Error("No record with that ID!");
 }
 
-
-/* print collection - print each record in the collection with the
- specified name */
+// print collection - print each record in the collection with the
+// specified name
 void print_Collection_match_name(const Ordered_list<Collection> &catalog)
 {
     Ordered_list<Collection>::Iterator catalog_iterator;
@@ -260,9 +288,7 @@ void print_Collection_match_name(const Ordered_list<Collection> &catalog)
     cout << *catalog_iterator;
 }
 
-
-
-/* print all the records in the Library */
+// print all the records in the Library
 void print_Records(const Ordered_by_title_lib_t &library)
 {
     if (library.empty())
@@ -274,22 +300,19 @@ void print_Records(const Ordered_by_title_lib_t &library)
     }
 }
 
-/* print the Catalog - print all the collections in the Catalog */
+// print the Catalog - print all the collections in the Catalog
 void print_Catalog(const Ordered_list<Collection> &catalog)
 {
     if (catalog.empty())
         cout << "Catalog is empty" <<endl;
     else {
         cout << "Catalog contains " << catalog.size() << " collections:" <<endl;
-        for (auto iterator = catalog.begin(); iterator != catalog.end(); ++iterator)
+        for(auto iterator=catalog.begin(); iterator!=catalog.end(); ++iterator)
             cout << *iterator;
     }
 }
 
-
-
-
-/* print memory allocations  */
+// print memory allocations
 void print_memory_allocation(int library_size, int catalog_size)
 {
     cout << "Memory allocations:" <<endl;
@@ -297,14 +320,13 @@ void print_memory_allocation(int library_size, int catalog_size)
     cout << "Collections: " << catalog_size << endl;
     cout << "Lists: " << g_Ordered_list_count << endl;
     cout << "List Nodes: " << g_Ordered_list_Node_count << endl;
-    cout << "Strings: " << String::get_number() << " with " << String::get_total_allocation() << " bytes total" << endl;
+    cout << "Strings: " << String::get_number() << " with "
+    << String::get_total_allocation() << " bytes total" << endl;
 }
 
-
-
-
-/* add a record to the Library */
-void add_Record(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id)
+// add a record to the Library
+void add_Record(Ordered_by_title_lib_t &library_title,
+                Ordered_by_id_lib_t &library_id)
 {
     String medium, title;
     cin >> medium;
@@ -315,15 +337,13 @@ void add_Record(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &libr
         Record *new_record = new Record(medium, title);
         library_title.insert(new_record);
         library_id.insert(new_record);
-        cout << "Record " << new_record->get_ID() << " added" <<endl;
+        cout << "Record " << new_record->get_ID() << " added" << endl;
     }
     else
         throw Error("Library already has a record with this title!");
 }
 
-
-
-/* add a collection with the specified name */
+// add a collection with the specified name
 void add_Collection(Ordered_list<Collection> &catalog)
 {
     String collection_name;
@@ -339,40 +359,38 @@ void add_Collection(Ordered_list<Collection> &catalog)
         throw Error("Catalog already has a collection with this name!");
 }
 
-
-
-/* add a record to a specified collection */
-void add_Record_to_Collection(Ordered_list<Collection> &catalog, const Ordered_by_id_lib_t &library)
+// add a record to a specified collection
+void add_Record_to_Collection(Ordered_list<Collection> &catalog,
+                              const Ordered_by_id_lib_t &library)
 {
     Ordered_list<Collection>::Iterator catalog_iterator;
     find_collection_iterator(catalog_iterator, catalog);
     int id_input;
     read_and_check_integer(id_input);
-    Record probe(id_input);
-    auto library_iterator = library.find(&probe);
-    if (library_iterator == library.end())
-        throw Error("No record with that ID!");
+    Ordered_by_id_lib_t::Iterator library_iterator;
+    probe_Record_by_id(id_input, library_iterator, library);
     catalog_iterator->add_member(*library_iterator);
-    cout << "Member " << id_input << " " << (*library_iterator)->get_title() <<" added" << endl;
+    cout << "Member " << id_input << " " << (*library_iterator)->get_title()
+    <<" added" << endl;
 }
 
-/* modify the rating of the specified record with the matching ID number */
+// modify the rating of the specified record with the matching ID number
 void modify_Record_rating(const Ordered_by_id_lib_t &library)
 {
     int id_input, rating_input;
     read_and_check_integer(id_input);
-    Record probe(id_input);
-    auto library_iterator = library.find(&probe);
-    if (library_iterator == library.end())
-        throw Error("No record with that ID!");
+    Ordered_by_id_lib_t::Iterator library_iterator;
+    probe_Record_by_id(id_input, library_iterator, library);
     read_and_check_integer(rating_input);
     (*library_iterator)->set_rating(rating_input);
-    cout << "Rating for record " << id_input << " changed to " << rating_input <<endl;
+    cout << "Rating for record " << id_input << " changed to "
+    << rating_input << endl;
 }
 
-
-/* delete the specified record from the Library */
-void delete_Record_from_Library(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id, const Ordered_list<Collection> &catalog)
+// delete the specified record from the Library
+void delete_Record_from_Library(Ordered_by_title_lib_t &library_title,
+                                Ordered_by_id_lib_t &library_id,
+                                const Ordered_list<Collection> &catalog)
 {
     String title;
     read_check_title(title);
@@ -380,7 +398,8 @@ void delete_Record_from_Library(Ordered_by_title_lib_t &library_title, Ordered_b
     auto library_title_iterator = library_title.find(&probe);
     if (library_title_iterator == library_title.end())
         throw Error("No record with that title!");
-    if (apply_if_arg(catalog.begin(), catalog.end(), check_record_in_Collection, *library_title_iterator))
+    if (apply_if_arg(catalog.begin(), catalog.end(), check_record_in_Collection,
+                     *library_title_iterator))
         throw Error("Cannot delete a record that is a member of a collection!");
     int record_ID = (*library_title_iterator)->get_ID();
     Record *delete_pointer = * library_title_iterator;
@@ -388,7 +407,7 @@ void delete_Record_from_Library(Ordered_by_title_lib_t &library_title, Ordered_b
     Record probe2(record_ID);
     library_id.erase(library_id.find(&probe2));
     delete delete_pointer;
-    cout << "Record " << record_ID << " " << title << " deleted" <<endl;
+    cout << "Record " << record_ID << " " << title << " deleted" << endl;
 }
 
 bool check_record_in_Collection (Collection collection, Record *arg_ptr)
@@ -396,10 +415,7 @@ bool check_record_in_Collection (Collection collection, Record *arg_ptr)
     return collection.is_member_present(arg_ptr);
 }
 
-
-
-
-/* delete the specified collection from the Catalog */
+// delete the specified collection from the Catalog
 void delete_Collection_from_Catalog(Ordered_list<Collection> &catalog)
 {
     Ordered_list<Collection>::Iterator catalog_iterator;
@@ -409,31 +425,25 @@ void delete_Collection_from_Catalog(Ordered_list<Collection> &catalog)
     cout << "Collection " << collection_name << " deleted" << endl;
 }
 
-/* delete the specified record as member of the a specified collection */
-void delete_Record_from_Collection(Ordered_list<Collection> &catalog, const Ordered_by_id_lib_t &library)
+// delete the specified record as member of the a specified collection
+void delete_Record_from_Collection(Ordered_list<Collection> &catalog,
+                                   const Ordered_by_id_lib_t &library)
 {
-    
-    // very similar to add record to collection, find way to simplify it
     Ordered_list<Collection>::Iterator catalog_iterator;
     find_collection_iterator(catalog_iterator, catalog);
     int id_input;
     read_and_check_integer(id_input);
-    
-    // this part should be simplified
-    Record probe(id_input);
-    auto library_iterator = library.find(&probe);
-    
-    if (library_iterator == library.end())
-        throw Error("No record with that ID!");
+    Ordered_by_id_lib_t::Iterator library_iterator;
+    probe_Record_by_id(id_input, library_iterator, library);
     catalog_iterator->remove_member(*library_iterator);
-    cout << "Member " << id_input << " " << (*library_iterator)->get_title() <<" deleted" << endl;
-
+    cout << "Member " << id_input << " " << (*library_iterator)->get_title()
+    <<" deleted" << endl;
 }
 
-
-
-/* Clear the Library. If collections are not empty, throw exception */
-void clear_Library(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id, const Ordered_list<Collection> &catalog)
+// Clear the Library. If collections are not empty, throw exception
+void clear_Library(Ordered_by_title_lib_t &library_title,
+                   Ordered_by_id_lib_t &library_id,
+                   const Ordered_list<Collection> &catalog)
 {
     if (apply_if(catalog.begin(), catalog.end(), check_Collection_empty))
         throw Error("Cannot clear all records unless all collections are empty!");
@@ -448,28 +458,26 @@ bool check_Collection_empty (Collection collection)
     return !collection.empty();
 }
 
-
-/* clear the Catalog: destroy all of the collections in the Catalog,
- and clear the Catalog */
+// clear the Catalog: destroy all of the collections in the Catalog,
+// and clear the Catalog
 void clear_Catalog(Ordered_list<Collection> &catalog)
 {
     catalog.clear();
 }
 
-
-/*  clear all data: first clear the Catalog as in cC,
- then clear the Library as in cL */
-void clear_all_data(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id, Ordered_list<Collection> &catalog)
+// clear all data: first clear the Catalog as in cC,
+// then clear the Library as in cL
+void clear_all_data(Ordered_by_title_lib_t &library_title,
+                    Ordered_by_id_lib_t &library_id,
+                    Ordered_list<Collection> &catalog)
 {
     clear_Catalog(catalog);
     clear_Library(library_title, library_id, catalog);
 }
 
-
-
-
-/* save all data: write the Library and Catalog data to the named file */
-void save_all_data(const Ordered_by_title_lib_t &library_title, const Ordered_list<Collection> &catalog)
+// save all data: write the Library and Catalog data to the named file
+void save_all_data(const Ordered_by_title_lib_t &library_title,
+                   const Ordered_list<Collection> &catalog)
 {
     String file_name;
     cin >> file_name;
@@ -480,17 +488,17 @@ void save_all_data(const Ordered_by_title_lib_t &library_title, const Ordered_li
     for (auto record_ptr : library_title)
         record_ptr->save(output_file);
     output_file << catalog.size() << endl;
-    for (auto collection : catalog)
-        collection.save(output_file);
+    for (auto iterator = catalog.begin(); iterator != catalog.end(); ++iterator)
+        iterator->save(output_file);
     output_file.close();
     cout << "Data saved" <<endl;
 }
 
-
-
-
-/* restore all data - restore the Library and Catalog data from the file */
-void restore_all_data(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id, Ordered_list<Collection> &catalog)
+// restore all data - restore the Library and Catalog data from the file
+// if fail, roll back the to the data before calling this command
+void restore_all_data(Ordered_by_title_lib_t &library_title,
+                      Ordered_by_id_lib_t &library_id,
+                      Ordered_list<Collection> &catalog)
 {
     String file_name;
     cin >> file_name;
@@ -498,8 +506,8 @@ void restore_all_data(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t
     if (!input_file.is_open())
         throw Error("Could not open file!");
     Ordered_list<Collection> local_catalog(catalog);
-    Ordered_list<Record *, Less_than_ptr<Record *>> local_library_ordered_by_title(library_title);
-    Ordered_list<Record *, Compare_Record_ID> local_library_ordered_by_id(library_id);
+    Ordered_by_title_lib_t local_library_ordered_by_title(library_title);
+    Ordered_by_id_lib_t local_library_ordered_by_id(library_id);
     catalog.clear();
     library_id.clear();
     library_title.clear();
@@ -522,7 +530,8 @@ void restore_all_data(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t
             catalog.insert(new_collection);
         }
         input_file.close();
-        apply(local_library_ordered_by_title.begin(), local_library_ordered_by_title.end(), free_Record);
+        apply(local_library_ordered_by_title.begin(),
+              local_library_ordered_by_title.end(), free_Record);
         cout << "Data loaded" <<endl;
     } catch (Error &error) {
         clear_all_data(library_title, library_id, catalog);
@@ -540,18 +549,20 @@ void free_Record(Record *record_ptr)
     delete record_ptr;
 }
 
-/* clear all data (as in cA), and also destroy the Library and Catalog
- containers themselves, so that all memory is deallocated, and then terminate */
-void quit(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id, Ordered_list<Collection> &catalog)
+// clear all data (as in cA), and also destroy the Library and Catalog
+// containers themselves, so that all memory is deallocated, and then terminate
+void quit(Ordered_by_title_lib_t &library_title, Ordered_by_id_lib_t &library_id,
+          Ordered_list<Collection> &catalog)
 {
     clear_all_data(library_title, library_id, catalog);
     cout << "All data deleted" << endl;
     cout << "Done" << endl;
 }
 
-/* Find the collection pointer from catalog with the specified collection name.
- Print error message and read to new line if the collection doesn't exist*/
-void find_collection_iterator(Ordered_list<Collection>::Iterator &catalog_iterator, const Ordered_list<Collection> &catalog)
+// Find the iterator from catalog with the specified collection name.
+// throw exception if the collection doesn't exist
+void find_collection_iterator(Ordered_list<Collection>::Iterator &catalog_iterator,
+                              const Ordered_list<Collection> &catalog)
 {
     String collection_name;
     cin >> collection_name;
@@ -561,16 +572,26 @@ void find_collection_iterator(Ordered_list<Collection>::Iterator &catalog_iterat
         throw Error("No collection with that name!");
 }
 
-/* Read in an integer and check whether it succeeds.
- throw exceptoin if read fails */
+// probe the library to find the iterator according to the input id
+void probe_Record_by_id(int id, Ordered_by_id_lib_t::Iterator &library_iterator,
+                        const Ordered_by_id_lib_t &library)
+{
+    Record probe(id);
+    library_iterator = library.find(&probe);
+    if (library_iterator == library.end())
+        throw Error("No record with that ID!");
+}
+
+// Read in an integer and check whether it succeeds.
+// throw exceptoin if read fails
 void read_and_check_integer(int &id_input)
 {
     if (!(cin >> id_input))
         throw Error("Could not read an integer value!");
 }
 
-/* Read title and check whether its valid.
- return 1 if the title is valie, 0 if not.*/
+// Read title and check whether its valid.
+// throw exception if the title is invalid.
 void read_check_title(String &title)
 {
     getline(cin, title);
@@ -578,6 +599,9 @@ void read_check_title(String &title)
         throw Error("Could not read a title!");
 }
 
+// Remove leading or trailing whitespace of the title passed in, and all
+// embedded consecutive whitespace characters shrunk to a single
+// character (' '). Return 0 if the tile is empty after trim, 1 if not
 int trim_title(String &title)
 {
     int valid = 0, i = 0;

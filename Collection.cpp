@@ -2,6 +2,7 @@
 #include "Record.h"
 #include "Utility.h"
 #include <fstream>
+#include <iostream>
 
 using std::endl;
 
@@ -10,7 +11,7 @@ Collection::Collection(std::ifstream& is, const Ordered_list<Record*, Less_than_
     int num_records;
     if (!(is >> name >> num_records))
         throw Error("Invalid data found in file!");
-    for (int i = 0; i < num_records; ++i) {
+    for (int i = 0; i < num_records; i++) {
         is.get(); // read the new line character
         String title;
         getline(is, title);
@@ -32,7 +33,7 @@ void Collection::add_member(Record* record_ptr)
 
 bool Collection::is_member_present(Record* record_ptr) const
 {
-    return (members.find(record_ptr) == members.end()) ? false : true;
+    return !(members.find(record_ptr) == members.end());
 }
 
 void Collection::remove_member(Record* record_ptr)
